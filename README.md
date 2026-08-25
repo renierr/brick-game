@@ -29,7 +29,7 @@ No build step, no dependencies.
 
 ### Level Design
 
-The board is a seamless **13-column grid** — tiles sit flush against each other with no gap. Every layout is cut from one of twelve hand-drawn stencils, auto-centered on the grid, and randomly mirrored.
+The board is a seamless **13-column grid** — tiles sit flush against each other with no gap. Every layout is cut from one of nineteen hand-drawn stencils, auto-centered on the grid, and randomly mirrored.
 
 **Spawn rules**
 
@@ -164,6 +164,73 @@ Skull — blast-tile nose:
     ####..X..####
     .##..###..##.
     ...#######...
+
+Ghost — gift between the eyes, tattered skirt:
+
+    ...#######...
+    ..#########..
+    ##..#####..##
+    ##..##G##..##
+    .###########.
+    ..#.#.#.#.#..
+
+UFO — blast dome, orb tractor-lights:
+
+    .....#X#.....
+    ....#####....
+    ..#########..
+    #############
+    #..O.....O..#
+
+Rocket — blast boosters, ×2 porthole:
+
+    ......#......
+    .....###.....
+    ....#####....
+    ####X###X####
+    ####..M..####
+    .####...####.
+
+Anchor — pierce-tile flukes:
+
+    .....###.....
+    .....#.#.....
+    ......#......
+    #############
+    ......#......
+    P.....#.....P
+    ##....#....##
+
+Lightning bolt:
+
+    ....######...
+    ...###.......
+    ..#######....
+    ......####...
+    .....###.....
+    ....##.......
+    ...##........
+
+Question mark:
+
+    ...######....
+    ..##....###..
+    ........###..
+    .......###...
+    ......###....
+    ......###....
+    .............
+    ......###....
+
+Spider — orb eye in the body:
+
+    #..#.....#..#
+    .#..#...#..#.
+    ..##.#.#.##..
+    .#####O#####.
+    ..#########..
+    .#..#.#.#..#.
+    #...#...#...#
 
 There is no final level — only your best score.
 

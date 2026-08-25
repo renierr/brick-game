@@ -137,7 +137,7 @@ storage.set('bbc_save', JSON.stringify({ v: 1, level: 3, score: 10, best: 20, to
 run('loadSaved()');
 assert(run("bricks.some(b => b.type === 'pierce')") && run("bricks.some(b => b.type === 'orb')"), 'tile types survive save/load');
 
-assert(run('STENCILS.length') >= 12, 'stencil gallery holds 12+ forms');
+assert(run('STENCILS.length') >= 19, 'stencil gallery holds 19+ forms');
 const stencilOk = run('STENCILS.every(s => s.length >= 5 && s.every(r => r.length === s[0].length) && s[0].length <= COLS)');
 assert(stencilOk, 'all stencils well-formed and fit the grid');
 
