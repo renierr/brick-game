@@ -1,33 +1,62 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
+@supports (height:100dvh){html,body{height:100dvh}}
 body{
   background:radial-gradient(1200px 800px at 50% -10%,#1b2033,#0b0d14 60%);
   display:flex;align-items:center;justify-content:center;
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  color:#e2e8f0;overflow:hidden;user-select:none;-webkit-user-select:none
+  color:#e2e8f0;overflow:hidden;user-select:none;-webkit-user-select:none;
+  padding:8px;
+  padding-top:max(8px,env(safe-area-inset-top));
+  padding-right:max(8px,env(safe-area-inset-right));
+  padding-bottom:max(8px,env(safe-area-inset-bottom));
+  padding-left:max(8px,env(safe-area-inset-left))
 }
-#frame{position:relative;height:min(100dvh - 20px,calc((100vw - 20px)*760/480));aspect-ratio:480/760}
-canvas{
-  width:100%;height:100%;display:block;border-radius:16px;background:#10121c;
-  box-shadow:0 24px 60px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.05);
-  touch-action:none;cursor:crosshair
+
+/* Column layout: HUD bar on top, board fills the middle, actions below.
+   Nothing floats over the play field, so it always fits and stays reachable. */
+#frame{
+  display:flex;flex-direction:column;gap:8px;
+  height:100%;width:100%;max-width:600px;min-height:0
 }
-#hud{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:6px;align-items:center;z-index:5;pointer-events:none}
-.spacer{flex:1}
-.chip{display:flex;align-items:center;gap:6px;background:rgba(13,16,26,.72);border:1px solid rgba(148,163,184,.18);border-radius:999px;padding:5px 10px;backdrop-filter:blur(6px)}
+
+/* ---------- top info bar ---------- */
+#hud{
+  flex:none;display:flex;align-items:center;gap:6px;row-gap:4px;flex-wrap:wrap
+}
+.spacer{flex:1;min-width:0}
+.chip{
+  display:flex;align-items:center;gap:6px;white-space:nowrap;min-width:0;
+  background:rgba(13,16,26,.72);border:1px solid rgba(148,163,184,.18);
+  border-radius:999px;padding:5px 10px
+}
 .chip .label{font-size:9px;letter-spacing:.12em;color:#94a3b8;font-weight:700}
 .chip .value{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
 .iconbtn{
-  pointer-events:auto;width:32px;height:32px;border-radius:999px;display:grid;place-items:center;
+  flex:none;width:34px;height:34px;border-radius:999px;display:grid;place-items:center;
   background:rgba(13,16,26,.72);border:1px solid rgba(148,163,184,.22);color:#cbd5e1;
-  cursor:pointer;backdrop-filter:blur(6px);transition:background .15s,color .15s,transform .1s
+  cursor:pointer;touch-action:manipulation;transition:background .15s,color .15s,transform .1s
 }
 .iconbtn:hover{color:#fff;background:rgba(56,189,248,.25)}
 .iconbtn:active{transform:scale(.9)}
-#hint{position:absolute;left:0;right:0;bottom:66px;text-align:center;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#94a3b8;pointer-events:none;text-shadow:0 2px 8px #000;z-index:4}
+
+/* ---------- stage / board ---------- */
+#stage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+#board{position:relative;display:flex} /* shrink-wraps the canvas */
+canvas{
+  display:block;max-width:100%;border-radius:16px;background:#10121c;
+  box-shadow:0 24px 60px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.05);
+  touch-action:none;cursor:crosshair
+}
+#hint{
+  position:absolute;left:0;right:0;bottom:11%;text-align:center;font-size:11px;
+  letter-spacing:.16em;text-transform:uppercase;color:#94a3b8;
+  pointer-events:none;text-shadow:0 2px 8px #000;z-index:4
+}
 #banner{
-  position:absolute;top:36%;left:0;right:0;text-align:center;font-size:40px;font-weight:900;letter-spacing:.08em;
-  color:#fff;text-shadow:0 0 26px rgba(56,189,248,.85),0 4px 18px rgba(0,0,0,.65);
+  position:absolute;top:36%;left:0;right:0;text-align:center;font-size:clamp(26px,9vw,40px);
+  font-weight:900;letter-spacing:.08em;color:#fff;
+  text-shadow:0 0 26px rgba(56,189,248,.85),0 4px 18px rgba(0,0,0,.65);
   opacity:0;pointer-events:none;z-index:6
 }
 #banner.show{animation:bannerPop 1.6s cubic-bezier(.2,.8,.2,1) forwards}
@@ -38,37 +67,41 @@ canvas{
   78%{opacity:1}
   100%{opacity:0;transform:scale(1)}
 }
+
+/* ---------- overlays ---------- */
 .overlay{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  position:absolute;inset:0;display:grid;place-items:center;padding:12px;
   background:rgba(5,7,12,.68);backdrop-filter:blur(5px);border-radius:16px;z-index:10;transition:opacity .18s
 }
 .overlay.hidden{opacity:0;pointer-events:none}
 #panel,#powerPanel{
   background:#141827;border:1px solid rgba(148,163,184,.16);border-radius:20px;
-  padding:26px 28px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.6)
+  padding:26px 28px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.6);
+  max-width:min(92vw,380px);max-height:100%;overflow:auto
 }
 #panel h1{font-size:26px;letter-spacing:.14em;margin-bottom:8px;color:#f87171}
 .final{font-size:44px;font-weight:900;color:#fff;line-height:1.1}
 #finalBest{color:#94a3b8;font-size:13px;margin:4px 0 18px}
-.btnrow{display:flex;gap:10px;justify-content:center}
+.btnrow{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 .btn-primary{
   background:linear-gradient(135deg,#38bdf8,#6366f1);border:none;color:#fff;font-weight:800;
   letter-spacing:.1em;padding:12px 24px;border-radius:999px;font-size:13px;cursor:pointer;
-  transition:transform .12s,box-shadow .2s;font-family:inherit
+  transition:transform .12s,box-shadow .2s;font-family:inherit;touch-action:manipulation
 }
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,.45)}
 .btn-ghost{
   background:transparent;border:1px solid rgba(148,163,184,.3);color:#94a3b8;font-weight:700;
   letter-spacing:.1em;padding:12px 20px;border-radius:999px;font-size:13px;cursor:pointer;
-  transition:color .15s,border-color .15s;font-family:inherit
+  transition:color .15s,border-color .15s;font-family:inherit;touch-action:manipulation
 }
 .btn-ghost:hover{color:#e2e8f0;border-color:rgba(148,163,184,.55)}
 #powerPanel h2{font-size:15px;letter-spacing:.18em;margin-bottom:14px;color:#cbd5e1;display:flex;align-items:center;gap:8px;justify-content:center}
 .inf{color:#34d399;font-size:20px}
 .pw{
-  display:flex;align-items:center;gap:12px;width:292px;background:rgba(148,163,184,.07);
+  display:flex;align-items:center;gap:12px;width:min(292px,calc(100vw - 80px));
   border:1px solid rgba(148,163,184,.16);border-radius:14px;padding:10px 14px;margin-bottom:10px;
-  color:#e2e8f0;cursor:pointer;text-align:left;transition:background .15s,transform .12s,border-color .15s;font-family:inherit
+  background:rgba(148,163,184,.07);color:#e2e8f0;cursor:pointer;text-align:left;
+  transition:background .15s,transform .12s,border-color .15s;font-family:inherit;touch-action:manipulation
 }
 .pw:hover{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.45);transform:translateY(-1px)}
 .pw:active{transform:scale(.98)}
@@ -78,16 +111,34 @@ canvas{
 .pw-inf{color:#34d399;font-weight:900;font-size:18px}
 #closePower{
   margin-top:4px;background:transparent;border:1px solid rgba(148,163,184,.3);color:#94a3b8;
-  padding:9px 24px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.12em;cursor:pointer;transition:color .15s,border-color .15s
+  padding:9px 24px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.12em;
+  cursor:pointer;transition:color .15s,border-color .15s;touch-action:manipulation
 }
 #closePower:hover{color:#e2e8f0;border-color:rgba(148,163,184,.55)}
-#actions{position:absolute;left:12px;right:12px;bottom:8px;display:flex;justify-content:space-between;z-index:5}
+
+/* ---------- bottom action bar ---------- */
+#actions{flex:none;display:flex;justify-content:center;gap:48px;padding-bottom:env(safe-area-inset-bottom)}
 .actionbtn{
-  width:42px;height:42px;border-radius:999px;display:grid;place-items:center;
+  width:48px;height:48px;border-radius:999px;display:grid;place-items:center;
   background:rgba(13,16,26,.78);border:1px solid rgba(148,163,184,.25);color:#cbd5e1;
-  cursor:pointer;backdrop-filter:blur(6px);transition:opacity .15s,transform .1s,color .15s,border-color .15s,box-shadow .2s
+  cursor:pointer;touch-action:manipulation;
+  transition:opacity .15s,transform .1s,color .15s,border-color .15s,box-shadow .2s
 }
+.actionbtn svg{width:22px;height:22px}
 .actionbtn:hover{color:#fff;border-color:rgba(56,189,248,.55)}
 .actionbtn:active{transform:scale(.92)}
 .actionbtn.dim{opacity:.22;pointer-events:none}
 .actionbtn.lit{color:#fbbf24;border-color:rgba(251,191,36,.65);box-shadow:0 0 14px rgba(251,191,36,.35)}
+
+/* ---------- compact phones ---------- */
+@media (max-width:430px){
+  body{padding:5px;padding-top:max(5px,env(safe-area-inset-top));padding-right:max(5px,env(safe-area-inset-right));padding-bottom:max(5px,env(safe-area-inset-bottom));padding-left:max(5px,env(safe-area-inset-left))}
+  #frame{gap:6px}
+  #hud{gap:4px;row-gap:3px}
+  .chip{padding:4px 7px;gap:4px}
+  .chip .label{font-size:8px}
+  .chip .value{font-size:11.5px}
+  .iconbtn{width:30px;height:30px}
+  #actions{gap:40px}
+  .actionbtn{width:44px;height:44px}
+}

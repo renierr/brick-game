@@ -1,6 +1,18 @@
 'use strict';
 let last = performance.now(), bgTimer = null;
 
+const stageEl = $('stage');
+function fitStage() {
+  const w = stageEl.clientWidth, h = stageEl.clientHeight;
+  if (!w || !h) return;
+  const s = Math.min(w / W, h / H);
+  cv.style.width = Math.floor(W * s) + 'px';
+  cv.style.height = Math.floor(H * s) + 'px';
+}
+window.addEventListener('resize', fitStage);
+window.addEventListener('orientationchange', fitStage);
+fitStage();
+
 function step(dt) {
   if (mode !== 'over') update(dt);
   saveTimer += dt;
