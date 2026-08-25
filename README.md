@@ -27,9 +27,87 @@ No build step, no dependencies.
   - **Pierce (») tiles** grant a piercing charge — charges stack, one drilling ball per charge in your next volley.
   - **Blast tiles** grant a bomb charge — charges stack, one explosive ball per charge in your next volley.
 
-### Levels
+### Level Design
 
-Levels are assembled on an auto-centered grid from hand-drawn stencils — hearts, invaders, gems, castles, deflector funnels, butterflies — randomly mirrored, sprinkled with specials, and stacked into bigger compositions from level 8. HP scales forever; there is no final level — only your best score.
+The board is a seamless **13-column grid** — tiles sit flush against each other with no gap. Every layout is cut from a hand-drawn stencil, auto-centered on the grid, and randomly mirrored.
+
+**Spawn rules**
+
+- A clear zone (~3 rows) above the danger line is guaranteed — layouts never start inside your launch area, so every tile is reachable.
+- Tall compositions may begin with up to **4 rows hidden above the top edge**; those slide into view one row per turn. At least one row is always visible — a board is never fully off-screen.
+- From **level 8**, two stencils can stack vertically into one bigger composition when space allows.
+- Brick HP scales forever with the level, and ~12% of tiles get a ×1.5 reinforcement.
+- Plain slots roll bonuses: bombs ≈2–4% (grows slowly), gifts 3%, ×2 multipliers 4%. On top of that, 1–3 plain tiles are swapped for green (+) pickups.
+
+**Tile legend**
+
+    #   numbered brick        B   bomb             G   gift (?)
+    M   ×2 multiplier         P   pierce tile      X   blast tile
+    /   ramp deflector (\)    O   orb bumper       .   empty space
+
+**Stencil gallery**
+
+Heart — an ×2 tucked into the tip:
+
+    .###.....###.
+    #############
+    #############
+    .###########.
+    ..#########..
+    ...#######...
+    ....#####....
+    .....#M#.....
+
+Invader — orb-bumper eyes:
+
+    ..#.......#..
+    ...#.....#...
+    ..#########..
+    .##..O.O..##.
+    #############
+    #.#########.#
+    #.#.......#.#
+    ....##.##....
+
+Gem — a gift core:
+
+    ......#......
+    .....###.....
+    ....#####....
+    ...#######...
+    ..#########..
+    .###########.
+    ######G######
+    .###########.
+    ..#########..
+
+Castle — pierce towers, blast-tile flanks:
+
+    P.P..#.#..P.P
+    #############
+    ###...#...###
+    ###...#...###
+    ##XX#####XX##
+
+Funnel — ramps steering balls into waiting orbs:
+
+    \.........../
+    .\........./.
+    ..\......./..
+    ...\...../...
+    ....\.../....
+    .....\O/.....
+    ......O......
+
+Butterfly — blast-tile head:
+
+    ###.......###
+    ####..X..####
+    ###.#.#.#.###
+    .###########.
+    ..#########..
+
+There is no final level — only your best score.
 
 ### Power-ups
 
@@ -37,7 +115,7 @@ Open the grid menu for unlimited-use power-ups:
 
 | Power-up | Effect |
 | --- | --- |
-| +10 Balls | Instantly adds 10 balls to your stash (stash caps at 200) |
+| +10 Balls | Adds 10 balls to your stash (soft cap 150 — trimmed back to 100 at each level clear) |
 | Pierce Volley | Adds one piercing charge — a drill-through ball in your next volley |
 | Bomb Volley | Adds one bomb charge — its ball blasts neighbors for max 50 damage |
 | Clear Row | Wipes the lowest brick row |
@@ -68,6 +146,13 @@ On game over you can **Retry Level** (default — the board is restored exactly 
 ## Tech
 
 Vanilla HTML5 Canvas + Web Audio. The code is split by concern under `js/` (`config`, `state`, `audio`, `fx`, `board`, `actions`, `sim`, `render`, `progress`, `input`, `main`) and loaded with plain `<script>` tags sharing globals — no modules, no bundler, no build step; opening `index.html` straight from disk works. Fixed 480x760 logical resolution scaled to fit any screen; sub-stepped circle/AABB physics keeps fast volleys tunnel-free.
+
+Headless smoke tests live in the repo root (not part of the game itself) — run them with Node, zero dependencies:
+
+```sh
+node smoke.mjs
+node special-smoke.mjs
+```
 
 ## License
 

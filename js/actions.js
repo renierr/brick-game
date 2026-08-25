@@ -106,7 +106,7 @@ function finalizeShift() {
     if (score > best) { best = score; localStorage.setItem('bbc_best', best); }
     addText(W / 2, H / 2, '+' + bonus, '#fbbf24', 1.4, 24);
     banner('LEVEL ' + (level + 1));
-    totalBalls = Math.min(MAX_BALLS, totalBalls + 2);
+    totalBalls = Math.min(totalBalls + 2, VOLLEY_CAP);
     sfx.clear();
     betweenTimer = 1.1;
     mode = 'between';
