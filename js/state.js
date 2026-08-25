@@ -4,7 +4,7 @@ let level = 1, score = 0, totalBalls = 1, originX = W / 2;
 let best = +(localStorage.getItem('bbc_best') || 0);
 let muted = localStorage.getItem('bbc_mute') === '1';
 let mode = 'aiming', uidSeq = 1, timeSec = 0;
-let pendingShots = 0, volleyDir = { x: 0, y: -1 }, volleyAcc = 0, volleyElapsed = 0, firstLandX = null;
+let pendingShots = 0, volleyDir = { x: 0, y: -1 }, volleyAcc = 0, volleyElapsed = 0, firstLandX = null, volleyFirst = false;
 let pierceArmed = false, bombArmed = false, pierceFlag = false, bombFlag = false;
 let shiftT = 0, betweenTimer = 0, hintAlpha = 1, shake = 0, firedOnce = false;
 let aiming = false, aimPt = null;

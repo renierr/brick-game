@@ -20,11 +20,14 @@ No build step, no dependencies.
 - After every volley the board **drops one row**. If any brick crosses the red danger line, the run ends.
 - Clear the entire board to complete the level: score bonus, +2 balls, and a freshly generated next level.
 - Green **(+)** pickups are collected on touch and permanently add a ball.
-- **Bombs** explode on any hit, destroying all neighboring bricks — chain them for cascades.
+- **Special tiles**:
+  - **Bombs** explode on any hit, destroying all neighboring bricks — chain them for cascades.
+  - **Gift (?)** tiles drop a bonus +1 ball pickup when destroyed.
+  - **×2 multiplier** tiles pay double points when destroyed.
 
 ### Levels
 
-Levels are procedurally generated forever from pattern templates (checkerboard, pyramid, diamond, weave, stripes) with scaling HP, density, and bomb frequency. There is no final level — only your best score.
+Levels are procedurally generated forever from pattern templates (checkerboard, pyramid, diamond, weave, stripes) with scaling HP, density, and special-tile frequency. There is no final level — only your best score.
 
 ### Power-ups
 
@@ -33,9 +36,11 @@ Open the grid menu for unlimited-use power-ups:
 | Power-up | Effect |
 | --- | --- |
 | +10 Balls | Instantly adds 10 balls |
-| Pierce Volley | Next volley drills straight through bricks |
-| Bomb Volley | Next volley explodes on every impact |
+| Pierce Volley | The first ball of the next volley drills straight through bricks |
+| Bomb Volley | The first ball of the next volley explodes on impact |
 | Clear Row | Wipes the lowest brick row |
+
+Ball-based powers apply to the **first ball fired** in the volley only; the rest fly normal.
 
 ### Action buttons
 

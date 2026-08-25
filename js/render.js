@@ -74,7 +74,7 @@ function draw() {
   const off = mode === 'shifting' ? easeOut(Math.min(shiftT, 1)) * CELL : 0;
   for (const b of bricks) {
     const by = b.y + off;
-    const col = colorByHp(b.hp);
+    const col = b.type === 'gift' ? '#10b981' : b.type === 'mult' ? '#f59e0b' : colorByHp(b.hp);
     rr(b.x, by, b.w, b.h, 9);
     ctx.fillStyle = col; ctx.fill();
     ctx.strokeStyle = 'rgba(0,0,0,0.28)'; ctx.lineWidth = 2; ctx.stroke();
@@ -90,6 +90,20 @@ function draw() {
       ctx.beginPath(); ctx.moveTo(mx + 4, my - 8); ctx.quadraticCurveTo(mx + 10, my - 14, mx + 14, my - 11); ctx.stroke();
       ctx.fillStyle = '#fde047';
       ctx.beginPath(); ctx.arc(mx + 15, my - 11, 2.6, 0, Math.PI * 2); ctx.fill();
+    } else if (b.type === 'gift') {
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = '800 22px system-ui,sans-serif';
+      ctx.fillText('?', mx, my - 3);
+      ctx.font = '700 11px system-ui,sans-serif';
+      ctx.fillText(b.hp, mx, my + 13);
+    } else if (b.type === 'mult') {
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = '900 16px system-ui,sans-serif';
+      ctx.fillText('×2', mx, my - 4);
+      ctx.font = '700 11px system-ui,sans-serif';
+      ctx.fillText(b.hp, mx, my + 12);
     } else {
       ctx.fillStyle = '#fff';
       ctx.font = '800 ' + (b.hp > 99 ? 13 : b.hp > 9 ? 16 : 18) + 'px system-ui,sans-serif';

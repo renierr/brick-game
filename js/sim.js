@@ -104,10 +104,14 @@ function update(dt) {
     while (pendingShots > 0 && volleyAcc >= stg) {
       volleyAcc -= stg;
       pendingShots--;
+      const first = volleyFirst;
+      const pr = first && pierceFlag, bm = first && bombFlag;
+      volleyFirst = false;
+      if (first) { pierceFlag = false; bombFlag = false; }
       balls.push({
         x: originX, y: LAUNCH_Y - BALL_R,
         vx: volleyDir.x * BALL_SPEED, vy: volleyDir.y * BALL_SPEED,
-        pierce: pierceFlag, bomb: bombFlag, hit: new Set(), cd: 0, trail: []
+        pierce: pr, bomb: bm, hit: new Set(), cd: 0, trail: []
       });
     }
     moveBalls(dt);

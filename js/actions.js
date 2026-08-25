@@ -25,13 +25,19 @@ function destroy(k) {
   k.dead = true;
   const i = bricks.indexOf(k);
   if (i >= 0) bricks.splice(i, 1);
-  const pts = k.maxHp * 10 + level * 2;
+  let pts = k.maxHp * 10 + level * 2;
+  if (k.type === 'mult') pts *= 2;
   score += pts;
   if (score > best) { best = score; localStorage.setItem('bbc_best', best); }
-  addText(k.x + k.w / 2, k.y + k.h / 2, '+' + pts, colorByHp(k.maxHp), 0.8, 14);
+  if (k.type === 'mult') addText(k.x + k.w / 2, k.y + k.h / 2, '+' + pts + ' x2!', '#fbbf24', 1, 17);
+  else addText(k.x + k.w / 2, k.y + k.h / 2, '+' + pts, colorByHp(k.maxHp), 0.8, 14);
   burst(k.x + k.w / 2, k.y + k.h / 2, colorByHp(k.maxHp), 14);
   if (k.type === 'bomb') explodeAt(k.x + k.w / 2, k.y + k.h / 2);
-  else { sfx.break_(); shake = Math.min(shake + 2, 6); }
+  else if (k.type === 'gift') {
+    pickups.push(mkPickup(k.x, k.y));
+    addText(k.x + k.w / 2, k.y + k.h + 14, '+1 BALL', '#34d399', 1, 13);
+    sfx.plus();
+  } else { sfx.break_(); shake = Math.min(shake + 2, 6); }
   updateHud();
 }
 
@@ -71,6 +77,7 @@ function fire(dir) {
   pierceFlag = pierceArmed; bombFlag = bombArmed;
   pierceArmed = false; bombArmed = false;
   pendingShots = totalBalls;
+  volleyFirst = true;
   volleyAcc = STAGGER_MS;
   volleyElapsed = 0;
   firstLandX = null;
