@@ -29,13 +29,13 @@ No build step, no dependencies.
 
 ### Level Design
 
-The board is a seamless **13-column grid** — tiles sit flush against each other with no gap. Every layout is cut from a hand-drawn stencil, auto-centered on the grid, and randomly mirrored.
+The board is a seamless **13-column grid** — tiles sit flush against each other with no gap. Every layout is cut from one of twelve hand-drawn stencils, auto-centered on the grid, and randomly mirrored.
 
 **Spawn rules**
 
 - A clear zone (~3 rows) above the danger line is guaranteed — layouts never start inside your launch area, so every tile is reachable.
 - Tall compositions may begin with up to **4 rows hidden above the top edge**; those slide into view one row per turn. At least one row is always visible — a board is never fully off-screen.
-- From **level 8**, two stencils can stack vertically into one bigger composition when space allows.
+- From **level 8**, two stencils usually stack vertically into one bigger composition when space allows.
 - Brick HP scales forever with the level, and ~12% of tiles get a ×1.5 reinforcement.
 - Plain slots roll bonuses: bombs ≈2–4% (grows slowly), gifts 3%, ×2 multipliers 4%. On top of that, 1–3 plain tiles are swapped for green (+) pickups.
 
@@ -106,6 +106,64 @@ Butterfly — blast-tile head:
     ###.#.#.#.###
     .###########.
     ..#########..
+
+Diamond — the classic rhombus:
+
+    ......#......
+    .....###.....
+    ....#####....
+    ...#######...
+    ..#########..
+    .###########.
+    ..#########..
+    ...#######...
+    ....#####....
+
+Star — ×2 multiplier core:
+
+    ......#......
+    .....###.....
+    #####...#####
+    .###########.
+    ..####M####..
+    ..##.....##..
+    ##.........##
+
+Cross — blast tiles on the arms:
+
+    .....###.....
+    .....###.....
+    #####X#X#####
+    .....###.....
+    .....###.....
+
+Flower — orb-bumper heart:
+
+    ...##...##...
+    ..####.####..
+    ###..###..###
+    ####..O..####
+    ###..###..###
+    ..####.####..
+    ...##...##...
+
+Crown — gift jewel in the band:
+
+    #..#.....#..#
+    ##.##...##.##
+    #############
+    ######G######
+    .###########.
+
+Skull — blast-tile nose:
+
+    ..#########..
+    .###########.
+    ###..###..###
+    ###..###..###
+    ####..X..####
+    .##..###..##.
+    ...#######...
 
 There is no final level — only your best score.
 
