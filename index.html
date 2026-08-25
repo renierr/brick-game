@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bricks And Balls Crusher</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="frame">
+  <canvas id="cv" width="480" height="760"></canvas>
+
+  <div id="hud">
+    <div class="chip"><span class="label">SCORE</span><span id="score" class="value">0</span></div>
+    <div class="chip"><span class="label">BEST</span><span id="best" class="value">0</span></div>
+    <div class="chip"><span class="label">LV</span><span id="lv" class="value">1</span></div>
+    <div class="chip">
+      <svg viewBox="0 0 24 24" width="13" height="13"><circle cx="12" cy="12" r="9" fill="#38bdf8"/></svg>
+      <span id="balls" class="value">1</span>
+    </div>
+    <div class="spacer"></div>
+    <button id="muteBtn" class="iconbtn" title="Toggle sound" aria-label="Toggle sound">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/>
+        <path id="wave1" d="M15.5 8.5a5 5 0 0 1 0 7"/>
+        <path id="wave2" d="M18.5 5.5a9.5 9.5 0 0 1 0 13"/>
+        <line id="muteLine" x1="3" y1="3" x2="21" y2="21" style="display:none"/>
+      </svg>
+    </button>
+    <button id="restartBtn" class="iconbtn" title="Restart" aria-label="Restart">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+        <polyline points="21 3 21 9 15 9"/>
+      </svg>
+    </button>
+    <button id="menuBtn" class="iconbtn" title="Power-ups" aria-label="Power-ups">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+      </svg>
+    </button>
+  </div>
+
+  <div id="hint">drag to aim &middot; release to fire</div>
+  <div id="banner"></div>
+
+  <div id="powerOverlay" class="overlay hidden">
+    <div id="powerPanel">
+      <h2>POWER-UPS <span class="inf">&infin;</span></h2>
+      <button class="pw" data-pw="balls">
+        <span class="pw-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="8" cy="9" r="4.5" fill="#38bdf8"/><circle cx="16" cy="9" r="4.5" fill="#0ea5e9"/><circle cx="12" cy="16.5" r="4.5" fill="#7dd3fc"/></svg>
+        </span>
+        <span class="pw-name">+10 BALLS<small>Instantly adds 10 balls</small></span>
+        <span class="pw-inf">&infin;</span>
+      </button>
+      <button class="pw" data-pw="pierce">
+        <span class="pw-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><path d="M17 8l4 4-4 4"/><line x1="7" y1="5" x2="7" y2="19"/><line x1="13" y1="5" x2="13" y2="19"/></svg>
+        </span>
+        <span class="pw-name">PIERCE VOLLEY<small>Next volley drills through bricks</small></span>
+        <span class="pw-inf">&infin;</span>
+      </button>
+      <button class="pw" data-pw="bomb">
+        <span class="pw-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="14" r="6.5" fill="#fb923c" stroke="none"/><path d="M14.5 8.5l2-2.5"/><circle cx="18" cy="4.5" r="1.4" fill="#fde047" stroke="none"/></svg>
+        </span>
+        <span class="pw-name">BOMB VOLLEY<small>Next volley explodes on impact</small></span>
+        <span class="pw-inf">&infin;</span>
+      </button>
+      <button class="pw" data-pw="row">
+        <span class="pw-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round"><rect x="3" y="9" width="18" height="6" rx="2"/><line x1="6" y1="4" x2="18" y2="20"/></svg>
+        </span>
+        <span class="pw-name">CLEAR ROW<small>Wipes the lowest brick row</small></span>
+        <span class="pw-inf">&infin;</span>
+      </button>
+      <button id="closePower">CLOSE</button>
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay hidden">
+    <div id="panel">
+      <h1>GAME OVER</h1>
+      <p class="final" id="finalScore">0</p>
+      <p id="finalBest">Best: 0</p>
+      <button id="againBtn">PLAY AGAIN</button>
+    </div>
+  </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
