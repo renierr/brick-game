@@ -39,7 +39,7 @@ function generateLevel(lvl) {
   }
   let plusBudget = randInt(1, 3);
   const bombP = Math.min(0.04 + lvl * 0.001, 0.08);
-  const giftP = 0.04, multP = 0.05;
+  const giftP = 0.04, multP = 0.05, pierceP = 0.03, blastP = 0.03;
   for (const cell of cells) {
     const x = cell.c * CELL + GAP, y = cell.r * CELL + GAP;
     if (plusBudget > 0 && Math.random() < 0.11) {
@@ -54,6 +54,8 @@ function generateLevel(lvl) {
     if (roll < bombP) type = 'bomb';
     else if (roll < bombP + giftP) type = 'gift';
     else if (roll < bombP + giftP + multP) type = 'mult';
+    else if (roll < bombP + giftP + multP + pierceP) type = 'pierce';
+    else if (roll < bombP + giftP + multP + pierceP + blastP) type = 'blast';
     bricks.push(mkBrick(x, y, hp, type));
   }
   captureCheckpoint();

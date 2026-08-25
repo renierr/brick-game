@@ -37,6 +37,14 @@ function destroy(k) {
     pickups.push(mkPickup(k.x, k.y));
     addText(k.x + k.w / 2, k.y + k.h + 14, '+1 BALL', '#34d399', 1, 13);
     sfx.plus();
+  } else if (k.type === 'pierce') {
+    pierceArmed = true;
+    addText(originX, LAUNCH_Y - 64, 'PIERCE ARMED', '#a78bfa', 1.2, 15);
+    sfx.arm();
+  } else if (k.type === 'blast') {
+    bombArmed = true;
+    addText(originX, LAUNCH_Y - 64, 'BOMB ARMED', '#fb923c', 1.2, 15);
+    sfx.arm();
   } else { sfx.break_(); shake = Math.min(shake + 2, 6); }
   updateHud();
 }

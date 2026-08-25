@@ -27,7 +27,7 @@ function hydrate(d) {
     .map(o => ({
       uid: uidSeq++, x: o.x, y: o.y, w: BSIZE, h: BSIZE,
       hp: o.hp, maxHp: o.mh || o.hp,
-      type: o.t === 'bomb' || o.t === 'gift' || o.t === 'mult' ? o.t : 'normal', flash: 0, dead: false
+      type: ['bomb', 'gift', 'mult', 'pierce', 'blast'].includes(o.t) ? o.t : 'normal', flash: 0, dead: false
     }));
   pickups = (Array.isArray(d.pk) ? d.pk : [])
     .filter(o => o && typeof o.x === 'number' && typeof o.y === 'number')

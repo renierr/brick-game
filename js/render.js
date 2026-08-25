@@ -74,7 +74,7 @@ function draw() {
   const off = mode === 'shifting' ? easeOut(Math.min(shiftT, 1)) * CELL : 0;
   for (const b of bricks) {
     const by = b.y + off;
-    const col = b.type === 'gift' ? '#10b981' : b.type === 'mult' ? '#f59e0b' : colorByHp(b.hp);
+    const col = b.type === 'gift' ? '#10b981' : b.type === 'mult' ? '#f59e0b' : b.type === 'pierce' ? '#8b5cf6' : b.type === 'blast' ? '#ef4444' : colorByHp(b.hp);
     rr(b.x, by, b.w, b.h, 9);
     ctx.fillStyle = col; ctx.fill();
     ctx.strokeStyle = 'rgba(0,0,0,0.28)'; ctx.lineWidth = 2; ctx.stroke();
@@ -103,6 +103,28 @@ function draw() {
       ctx.font = '900 16px system-ui,sans-serif';
       ctx.fillText('×2', mx, my - 4);
       ctx.font = '700 11px system-ui,sans-serif';
+      ctx.fillText(b.hp, mx, my + 12);
+    } else if (b.type === 'pierce') {
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.moveTo(mx - 12, my - 12); ctx.lineTo(mx - 4, my - 4); ctx.lineTo(mx - 12, my + 4); ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(mx - 2, my - 12); ctx.lineTo(mx + 6, my - 4); ctx.lineTo(mx - 2, my + 4); ctx.closePath(); ctx.fill();
+      ctx.font = '700 11px system-ui,sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(b.hp, mx, my + 12);
+    } else if (b.type === 'blast') {
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI / 4) * i - Math.PI / 2;
+        const rad = i % 2 === 0 ? 10 : 4;
+        const px = mx + Math.cos(a) * rad, py = my - 4 + Math.sin(a) * rad;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath(); ctx.fill();
+      ctx.font = '700 11px system-ui,sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(b.hp, mx, my + 12);
     } else {
       ctx.fillStyle = '#fff';

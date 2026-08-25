@@ -24,6 +24,8 @@ No build step, no dependencies.
   - **Bombs** explode on any hit, destroying all neighboring bricks — chain them for cascades.
   - **Gift (?)** tiles drop a bonus +1 ball pickup when destroyed.
   - **×2 multiplier** tiles pay double points when destroyed.
+  - **Pierce (») tiles** arm the Pierce Volley power for your next shot when destroyed.
+  - **Blast tiles** arm the Bomb Volley power for your next shot when destroyed.
 
 ### Levels
 
