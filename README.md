@@ -44,7 +44,9 @@ Open the grid menu for unlimited-use power-ups:
 
 ### Progress
 
-Level, score, ball count, and the current board layout are auto-saved to browser storage — close the tab mid-level and resume where you left off. Best score persists across runs; game over resets the save.
+Level, score, ball count, and the current board layout are auto-saved to browser storage — close the tab mid-level and resume where you left off. Best score persists across runs.
+
+On game over you can **Retry Level** (default — the board is restored exactly as it looked when the level began) or **Start Over** from level 1. The restart button in the top bar also replays the current level from its start.
 
 ## Controls
 
@@ -54,6 +56,7 @@ Level, score, ball count, and the current board layout are auto-saved to browser
 | Recall button | Return balls, end turn |
 | Speed button | Fast-forward current volley |
 | Grid button | Power-up menu |
+| Restart button | Replay current level from its start |
 
 ## Tech
 

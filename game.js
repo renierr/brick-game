@@ -4,6 +4,7 @@ const W = 480, H = 760, COLS = 8, CELL = W / COLS, GAP = 6, BSIZE = CELL - GAP *
 const LAUNCH_Y = H - 34, DANGER_Y = H - 80;
 const BALL_R = 7, BALL_SPEED = 560, STAGGER_MS = 70, MAX_VOLLEY_S = 25;
 const MIN_ANGLE = Math.PI / 20, MAX_BALLS = 250, SHIFT_S = 0.22;
+const SPEED_BOOST = 3, AUTO_SPEED_AFTER = 6;
 
 const $ = id => document.getElementById(id);
 const cv = $('cv'), ctx = cv.getContext('2d');
@@ -13,7 +14,7 @@ cv.width = W * dpr; cv.height = H * dpr;
 const scoreEl = $('score'), bestEl = $('best'), lvEl = $('lv'), ballsEl = $('balls');
 const overlayEl = $('overlay'), finalScoreEl = $('finalScore'), finalBestEl = $('finalBest');
 const powerOverlay = $('powerOverlay'), bannerEl = $('banner'), hintEl = $('hint');
-const muteLine = $('muteLine');
+const muteLine = $('muteLine'), speedBtn = $('speedBtn'), recallBtn = $('recallBtn');
 
 let bricks = [], pickups = [], balls = [], particles = [], texts = [], rings = [];
 let level = 1, score = 0, totalBalls = 1, originX = W / 2;
@@ -24,6 +25,9 @@ let pendingShots = 0, volleyDir = { x: 0, y: -1 }, volleyAcc = 0, volleyElapsed 
 let pierceArmed = false, bombArmed = false, pierceFlag = false, bombFlag = false;
 let shiftT = 0, betweenTimer = 0, hintAlpha = 1, shake = 0, firedOnce = false;
 let aiming = false, aimPt = null;
+let speedMult = 1, autoSped = false;
+let saveDirty = false, saveTimer = 0;
+let checkpoint = null;
 
 const randInt = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -147,6 +151,7 @@ function generateLevel(lvl) {
     const type = Math.random() < bombP ? 'bomb' : 'normal';
     bricks.push(mkBrick(x, y, hp, type));
   }
+  captureCheckpoint();
 }
 
 function explodeAt(x, y) {
@@ -225,6 +230,7 @@ function fire(dir) {
   volleyElapsed = 0;
   firstLandX = null;
   firedOnce = true;
+  speedMult = 1; autoSped = false;
   mode = 'shooting';
   sfx.launch();
 }
@@ -260,6 +266,9 @@ function gameOver() {
   finalBestEl.textContent = 'Best: ' + best;
   overlayEl.classList.remove('hidden');
   sfx.over();
+  if (checkpoint) writeSave(checkpoint, 'bbc_save');
+  else localStorage.removeItem('bbc_save');
+  saveDirty = false;
 }
 
 function resetGame() {
@@ -267,8 +276,11 @@ function resetGame() {
   particles.length = 0; texts.length = 0; rings.length = 0;
   level = 1; score = 0; totalBalls = 1; originX = W / 2;
   pierceArmed = bombArmed = pierceFlag = bombFlag = false;
+  speedMult = 1; autoSped = false;
   pendingShots = 0; firstLandX = null; aiming = false; aimPt = null;
   overlayEl.classList.add('hidden');
+  localStorage.removeItem('bbc_save');
+  saveDirty = false;
   generateLevel(1);
   banner('LEVEL 1');
   mode = 'aiming';
@@ -280,6 +292,90 @@ function updateHud() {
   bestEl.textContent = best;
   lvEl.textContent = level;
   ballsEl.textContent = totalBalls;
+  saveDirty = true;
+}
+
+function saveNow() {
+  if (mode === 'over') { saveDirty = false; return; }
+  writeSave({
+    v: 1, level, score, best, totalBalls, originX,
+    bricks: bricks.map(b => ({ x: Math.round(b.x), y: Math.round(b.y), hp: b.hp, mh: b.maxHp, t: b.type })),
+    pk: pickups.map(p => ({ x: Math.round(p.x), y: Math.round(p.y), r: p.r, s: p.seed }))
+  }, 'bbc_save');
+  saveDirty = false;
+}
+
+function writeSave(data, key) {
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {}
+}
+
+function readKey(key) {
+  try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
+}
+
+function hydrate(d) {
+  level = d.level;
+  score = d.score | 0;
+  totalBalls = clamp(d.totalBalls | 0 || 1, 1, MAX_BALLS);
+  originX = clamp(+d.originX || W / 2, BALL_R + 4, W - BALL_R - 4);
+  bricks = (Array.isArray(d.bricks) ? d.bricks : [])
+    .filter(o => o && typeof o.x === 'number' && typeof o.y === 'number' && o.hp > 0 && o.y + BSIZE < DANGER_Y)
+    .map(o => ({
+      uid: uidSeq++, x: o.x, y: o.y, w: BSIZE, h: BSIZE,
+      hp: o.hp, maxHp: o.mh || o.hp,
+      type: o.t === 'bomb' ? 'bomb' : 'normal', flash: 0, dead: false
+    }));
+  pickups = (Array.isArray(d.pk) ? d.pk : [])
+    .filter(o => o && typeof o.x === 'number' && typeof o.y === 'number')
+    .map(o => ({ x: o.x, y: o.y, r: o.r || 16, seed: o.s || 0 }));
+  balls.length = 0; particles.length = 0; texts.length = 0; rings.length = 0;
+  pendingShots = 0; firstLandX = null; aiming = false; aimPt = null;
+  pierceArmed = bombArmed = pierceFlag = bombFlag = false;
+  speedMult = 1; autoSped = false;
+  shiftT = 0; betweenTimer = 0;
+}
+
+function loadSaved() {
+  const d = readKey('bbc_save');
+  if (!d || d.v !== 1 || typeof d.level !== 'number' || d.level < 1) return false;
+  best = Math.max(best, d.best | 0);
+  hydrate(d);
+  return true;
+}
+
+function captureCheckpoint() {
+  checkpoint = {
+    v: 1, level, score, totalBalls, originX,
+    bricks: bricks.map(b => ({ x: b.x, y: b.y, hp: b.hp, mh: b.maxHp, t: b.type })),
+    pk: pickups.map(p => ({ x: Math.round(p.x), y: Math.round(p.y), r: p.r, s: p.seed }))
+  };
+  writeSave(checkpoint, 'bbc_ckpt');
+}
+
+function retryLevel() {
+  const d = checkpoint || readKey('bbc_ckpt');
+  if (!d || typeof d.level !== 'number') { resetGame(); return; }
+  overlayEl.classList.add('hidden');
+  hydrate(d);
+  banner('LEVEL ' + level);
+  mode = 'aiming';
+  sfx.arm();
+  updateHud();
+}
+
+function recallBalls() {
+  for (const b of balls) burst(b.x, b.y, '#7dd3fc', 6);
+  balls.length = 0;
+  pendingShots = 0;
+  firstLandX = null;
+  addText(W / 2, LAUNCH_Y - 64, 'RECALLED', '#7dd3fc', 1, 16);
+}
+
+function syncActions() {
+  const act = mode === 'shooting';
+  recallBtn.classList.toggle('dim', !act);
+  speedBtn.classList.toggle('dim', !act);
+  speedBtn.classList.toggle('lit', speedMult > 1);
 }
 
 function collideBricks(b) {
@@ -309,13 +405,14 @@ function collideBricks(b) {
 }
 
 function moveBalls(dt) {
-  const steps = Math.max(1, Math.ceil(BALL_SPEED * dt / BALL_R));
+  const k = speedMult;
+  const steps = Math.max(1, Math.ceil(BALL_SPEED * k * dt / BALL_R));
   const sdt = dt / steps;
   for (let bi = balls.length - 1; bi >= 0; bi--) {
     const b = balls[bi];
     for (let s = 0; s < steps; s++) {
-      b.x += b.vx * sdt;
-      b.y += b.vy * sdt;
+      b.x += b.vx * sdt * k;
+      b.y += b.vy * sdt * k;
       if (b.x < BALL_R) { b.x = BALL_R; b.vx = Math.abs(b.vx); }
       if (b.x > W - BALL_R) { b.x = W - BALL_R; b.vx = -Math.abs(b.vx); }
       if (b.y < BALL_R) { b.y = BALL_R; b.vy = Math.abs(b.vy); }
@@ -376,9 +473,15 @@ function update(dt) {
   stepFx(dt);
   if (mode === 'shooting') {
     volleyElapsed += dt;
+    if (!autoSped && speedMult === 1 && volleyElapsed > AUTO_SPEED_AFTER) {
+      speedMult = SPEED_BOOST;
+      autoSped = true;
+      addText(W / 2, H - 150, 'AUTO SPEED x' + SPEED_BOOST, '#fbbf24', 1, 17);
+    }
+    const stg = speedMult > 1 ? STAGGER_MS / 3 : STAGGER_MS;
     volleyAcc += dt * 1000;
-    while (pendingShots > 0 && volleyAcc >= STAGGER_MS) {
-      volleyAcc -= STAGGER_MS;
+    while (pendingShots > 0 && volleyAcc >= stg) {
+      volleyAcc -= stg;
       pendingShots--;
       balls.push({
         x: originX, y: LAUNCH_Y - BALL_R,
@@ -607,8 +710,21 @@ $('menuBtn').addEventListener('click', () => { ensureAudio(); openPower(); });
 $('closePower').addEventListener('click', closePower);
 powerOverlay.addEventListener('pointerdown', e => { if (e.target === powerOverlay) closePower(); });
 document.querySelectorAll('.pw').forEach(btn => btn.addEventListener('click', () => usePower(btn.dataset.pw)));
-$('restartBtn').addEventListener('click', resetGame);
-$('againBtn').addEventListener('click', resetGame);
+$('restartBtn').addEventListener('click', retryLevel);
+$('retryBtn').addEventListener('click', retryLevel);
+$('startOverBtn').addEventListener('click', resetGame);
+speedBtn.addEventListener('click', () => {
+  ensureAudio();
+  if (mode === 'shooting' && speedMult === 1) {
+    speedMult = SPEED_BOOST;
+    addText(originX, LAUNCH_Y - 74, 'SPEED x' + SPEED_BOOST, '#fbbf24', 1, 17);
+    sfx.arm();
+  }
+});
+recallBtn.addEventListener('click', () => {
+  ensureAudio();
+  if (mode === 'shooting') recallBalls();
+});
 
 function applyMuteIcon() {
   muteLine.style.display = muted ? '' : 'none';
@@ -626,13 +742,23 @@ function frame(now) {
   const dt = Math.min(0.033, (now - last) / 1000);
   last = now;
   if (mode !== 'over') update(dt);
+  saveTimer += dt;
+  if (saveDirty && saveTimer > 0.5) { saveTimer = 0; saveNow(); }
+  syncActions();
   draw();
   requestAnimationFrame(frame);
 }
 
 applyMuteIcon();
-generateLevel(1);
-banner('LEVEL 1');
+if (loadSaved()) {
+  if (!bricks.length) generateLevel(level);
+  banner('LEVEL ' + level);
+} else {
+  generateLevel(1);
+  banner('LEVEL 1');
+}
 updateHud();
+window.addEventListener('pagehide', () => { if (mode !== 'over') saveNow(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && mode !== 'over') saveNow(); });
 requestAnimationFrame(frame);
 })();

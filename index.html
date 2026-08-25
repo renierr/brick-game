@@ -27,7 +27,7 @@
         <line id="muteLine" x1="3" y1="3" x2="21" y2="21" style="display:none"/>
       </svg>
     </button>
-    <button id="restartBtn" class="iconbtn" title="Restart" aria-label="Restart">
+    <button id="restartBtn" class="iconbtn" title="Restart level" aria-label="Restart level">
       <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
         <polyline points="21 3 21 9 15 9"/>
@@ -37,6 +37,19 @@
       <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
         <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+      </svg>
+    </button>
+  </div>
+
+  <div id="actions">
+    <button id="recallBtn" class="actionbtn" title="Recall balls" aria-label="Recall balls">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v11"/><polyline points="7 9 12 14 17 9"/><line x1="5" y1="20" x2="19" y2="20"/>
+      </svg>
+    </button>
+    <button id="speedBtn" class="actionbtn" title="Speed up volley" aria-label="Speed up volley">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 5l7 7-7 7"/><path d="M13 5l7 7-7 7"/>
       </svg>
     </button>
   </div>
@@ -84,7 +97,10 @@
       <h1>GAME OVER</h1>
       <p class="final" id="finalScore">0</p>
       <p id="finalBest">Best: 0</p>
-      <button id="againBtn">PLAY AGAIN</button>
+      <div class="btnrow">
+        <button id="retryBtn" class="btn-primary">RETRY LEVEL</button>
+        <button id="startOverBtn" class="btn-ghost">START OVER</button>
+      </div>
     </div>
   </div>
 </div>
