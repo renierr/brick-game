@@ -4,12 +4,37 @@ function collideBricks(b) {
     if (k.dead) continue;
     const l = k.x - BALL_R, r = k.x + k.w + BALL_R, t = k.y - BALL_R, bt = k.y + k.h + BALL_R;
     if (b.x < l || b.x > r || b.y < t || b.y > bt) continue;
+    if (k.type === 'rampA' || k.type === 'rampB') {
+      if (b.shapeCd > 0) continue;
+      const vx = b.vx;
+      if (k.type === 'rampA') { b.vx = -b.vy; b.vy = -vx; }
+      else { b.vx = b.vy; b.vy = vx; }
+      b.shapeCd = 0.09;
+      damage(k, 1);
+      return true;
+    }
+    if (k.type === 'orb') {
+      if (b.shapeCd > 0) continue;
+      const cx = k.x + k.w / 2, cy = k.y + k.h / 2;
+      let nx = b.x - cx, ny = b.y - cy;
+      const d = Math.hypot(nx, ny) || 1;
+      nx /= d; ny /= d;
+      const dot = b.vx * nx + b.vy * ny;
+      b.vx -= 2 * dot * nx;
+      b.vy -= 2 * dot * ny;
+      const rad = k.w / 2 + BALL_R + 0.5;
+      b.x = cx + nx * rad;
+      b.y = cy + ny * rad;
+      b.shapeCd = 0.09;
+      damage(k, 1);
+      return true;
+    }
     const pl = b.x - l, pr = r - b.x, pt = b.y - t, pb = bt - b.y;
     if (b.pierce) {
       if (!b.hit.has(k.uid)) {
         b.hit.add(k.uid);
         damage(k, 1);
-        if (b.bomb && b.cd <= 0) { b.cd = 0.06; explodeAt(b.x, b.y); }
+        if (b.bomb && b.cd <= 0) { b.cd = 0.06; explodeAt(b.x, b.y, 50); }
       }
       continue;
     }
@@ -18,8 +43,8 @@ function collideBricks(b) {
     else if (m === pr) { b.x = r; b.vx = Math.abs(b.vx); }
     else if (m === pt) { b.y = t; b.vy = -Math.abs(b.vy); }
     else { b.y = bt; b.vy = Math.abs(b.vy); }
+    if (b.bomb && b.cd <= 0) { b.cd = 0.06; explodeAt(b.x, b.y, 50); return true; }
     damage(k, 1);
-    if (b.bomb && b.cd <= 0) { b.cd = 0.06; explodeAt(b.x, b.y); }
     return true;
   }
   return false;
@@ -38,6 +63,7 @@ function moveBalls(dt) {
       if (b.x > W - BALL_R) { b.x = W - BALL_R; b.vx = -Math.abs(b.vx); }
       if (b.y < BALL_R) { b.y = BALL_R; b.vy = Math.abs(b.vy); }
       if (b.cd > 0) b.cd -= sdt;
+      if (b.shapeCd > 0) b.shapeCd -= sdt;
       collideBricks(b);
       for (let pi = pickups.length - 1; pi >= 0; pi--) {
         const p = pickups[pi];
@@ -104,14 +130,13 @@ function update(dt) {
     while (pendingShots > 0 && volleyAcc >= stg) {
       volleyAcc -= stg;
       pendingShots--;
-      const first = volleyFirst;
-      const pr = first && pierceFlag, bm = first && bombFlag;
-      volleyFirst = false;
-      if (first) { pierceFlag = false; bombFlag = false; }
+      const pr = pierceLeft > 0, bm = bombLeft > 0;
+      if (pr) pierceLeft--;
+      if (bm) bombLeft--;
       balls.push({
         x: originX, y: LAUNCH_Y - BALL_R,
         vx: volleyDir.x * BALL_SPEED, vy: volleyDir.y * BALL_SPEED,
-        pierce: pr, bomb: bm, hit: new Set(), cd: 0, trail: []
+        pierce: pr, bomb: bm, hit: new Set(), cd: 0, shapeCd: 0, trail: []
       });
     }
     moveBalls(dt);

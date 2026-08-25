@@ -1,5 +1,5 @@
 'use strict';
-function explodeAt(x, y) {
+function explodeAt(x, y, dmg = 9999) {
   rings.push({ x, y, r: CELL * 0.5, max: CELL * 2.1, life: 1 });
   burst(x, y, '#fb923c', 26);
   sfx.boom();
@@ -9,7 +9,7 @@ function explodeAt(x, y) {
     const dx = b.x + b.w / 2 - x, dy = b.y + b.h / 2 - y;
     return dx * dx + dy * dy <= rad * rad;
   });
-  for (const b of snap) damage(b, 9999);
+  for (const b of snap) damage(b, dmg);
 }
 
 function damage(k, d) {
@@ -34,15 +34,14 @@ function destroy(k) {
   burst(k.x + k.w / 2, k.y + k.h / 2, colorByHp(k.maxHp), 14);
   if (k.type === 'bomb') explodeAt(k.x + k.w / 2, k.y + k.h / 2);
   else if (k.type === 'gift') {
-    pickups.push(mkPickup(k.x, k.y));
-    addText(k.x + k.w / 2, k.y + k.h + 14, '+1 BALL', '#34d399', 1, 13);
-    sfx.plus();
+    const kinds = ['balls', 'pierce', 'bomb', 'row'];
+    usePower(kinds[randInt(0, kinds.length - 1)]);
   } else if (k.type === 'pierce') {
-    pierceArmed = true;
+    pierceCharges++;
     addText(originX, LAUNCH_Y - 64, 'PIERCE ARMED', '#a78bfa', 1.2, 15);
     sfx.arm();
   } else if (k.type === 'blast') {
-    bombArmed = true;
+    bombCharges++;
     addText(originX, LAUNCH_Y - 64, 'BOMB ARMED', '#fb923c', 1.2, 15);
     sfx.arm();
   } else { sfx.break_(); shake = Math.min(shake + 2, 6); }
@@ -66,11 +65,11 @@ function usePower(kind) {
     addText(originX, LAUNCH_Y - 46, '+10 BALLS', '#38bdf8', 1, 16);
     sfx.plus();
   } else if (kind === 'pierce') {
-    pierceArmed = true;
+    pierceCharges++;
     addText(originX, LAUNCH_Y - 46, 'PIERCE ARMED', '#a78bfa', 1, 16);
     sfx.arm();
   } else if (kind === 'bomb') {
-    bombArmed = true;
+    bombCharges++;
     addText(originX, LAUNCH_Y - 46, 'BOMBS ARMED', '#fb923c', 1, 16);
     sfx.arm();
   } else if (kind === 'row') {
@@ -82,10 +81,9 @@ function usePower(kind) {
 
 function fire(dir) {
   volleyDir = dir;
-  pierceFlag = pierceArmed; bombFlag = bombArmed;
-  pierceArmed = false; bombArmed = false;
-  pendingShots = totalBalls;
-  volleyFirst = true;
+  pierceLeft = pierceCharges; bombLeft = bombCharges;
+  pierceCharges = 0; bombCharges = 0;
+  pendingShots = Math.min(totalBalls, VOLLEY_CAP);
   volleyAcc = STAGGER_MS;
   volleyElapsed = 0;
   firstLandX = null;
@@ -135,7 +133,7 @@ function resetGame() {
   bricks.length = 0; pickups.length = 0; balls.length = 0;
   particles.length = 0; texts.length = 0; rings.length = 0;
   level = 1; score = 0; totalBalls = 1; originX = W / 2;
-  pierceArmed = bombArmed = pierceFlag = bombFlag = false;
+  pierceCharges = 0; bombCharges = 0; pierceLeft = 0; bombLeft = 0;
   speedMult = 1; autoSped = false;
   pendingShots = 0; firstLandX = null; aiming = false; aimPt = null;
   overlayEl.classList.add('hidden');

@@ -3,60 +3,105 @@ function mkBrick(x, y, hp, type) {
   return { uid: uidSeq++, x, y, w: BSIZE, h: BSIZE, hp, maxHp: hp, type: type || 'normal', flash: 1, dead: false };
 }
 function mkPickup(x, y) {
-  return { x: x + BSIZE / 2, y: y + BSIZE / 2, r: 16, seed: Math.random() * 6 };
+  return { x: x + BSIZE / 2, y: y + BSIZE / 2, r: 14, seed: Math.random() * 6 };
 }
 
-const PATTERNS = ['full', 'checker', 'pyramid', 'diamond', 'weave', 'stripes'];
+const CH = { B: 'bomb', G: 'gift', M: 'mult', P: 'pierce', X: 'blast', '/': 'rampA', '\\': 'rampB', O: 'orb' };
+const STENCILS = [
+  [
+    '.##.....##.',
+    '###########',
+    '###########',
+    '.#########.',
+    '..#######..',
+    '...#####...',
+    '....#M#....'
+  ],
+  [
+    '..#.....#..',
+    '...#...#...',
+    '..#######..',
+    '.##.O.O.##.',
+    '###########',
+    '#.#######.#',
+    '#.#.....#.#',
+    '...##.##...'
+  ],
+  [
+    '.....#.....',
+    '....###....',
+    '...#####...',
+    '..#######..',
+    '.#########.',
+    '#####G#####',
+    '.#########.',
+    '..#######..'
+  ],
+  [
+    'P.P.#.#.P.P',
+    '###########',
+    '###..#..###',
+    '###..#..###',
+    '##XX###XX##'
+  ],
+  [
+    '\\........./',
+    '.\\......./.',
+    '..\\...../..',
+    '...\\.../...',
+    '....\\O/....',
+    '.....O.....'
+  ],
+  [
+    '##.......##',
+    '###..X..###',
+    '##.#.#.#.##',
+    '.#########.',
+    '..#######..'
+  ]
+];
+
 function generateLevel(lvl) {
   bricks.length = 0; pickups.length = 0;
-  const rows = clamp(3 + Math.floor(lvl / 2) + randInt(0, 1), 3, 7);
-  const pat = PATTERNS[randInt(0, PATTERNS.length - 1)];
   const lo = Math.max(1, Math.round(lvl * 0.8));
   const hi = Math.max(lo + 2, Math.round(lvl * 1.7));
-  const density = clamp(0.52 + lvl * 0.02, 0.52, 0.82);
-  const cx = (COLS - 1) / 2, cy = (rows - 1) / 2;
-  const cells = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < COLS; c++) {
-      let keep = true;
-      const dc = Math.abs(c - cx), dr = Math.abs(r - cy);
-      if (pat === 'checker') keep = ((r + c) % 2 === 0) && Math.random() < density + 0.12;
-      else if (pat === 'pyramid') keep = dc <= r * (cx + 0.6) / rows + 0.62 && Math.random() < density + 0.08;
-      else if (pat === 'diamond') keep = dc + dr <= cy + 1.7 && Math.random() < density + 0.08;
-      else if (pat === 'weave') keep = ((r + c) % 2 === 0) || (r % 2 === 0);
-      else if (pat === 'stripes') keep = (r % 2 === 0) || Math.random() < 0.35;
-      else keep = Math.random() < density;
-      if (keep) cells.push({ r, c });
+  const bombP = Math.min(0.02 + lvl * 0.0005, 0.04);
+  const arts = [randInt(0, STENCILS.length - 1)];
+  let used = STENCILS[arts[0]].length;
+  const maxRows = Math.floor((DANGER_Y - BSIZE) / CELL) - 1;
+  if (lvl >= 8 && Math.random() < 0.5) {
+    const j = randInt(0, STENCILS.length - 1);
+    if (j !== arts[0] && used + 1 + STENCILS[j].length <= maxRows) { arts.push(j); used += 1 + STENCILS[j].length; }
+  }
+  let oy = randInt(0, Math.max(0, maxRows - used));
+  for (const ai of arts) {
+    const rows = STENCILS[ai];
+    const w = rows[0].length;
+    const ox = Math.floor((COLS - w) / 2);
+    const mir = Math.random() < 0.5;
+    for (let r = 0; r < rows.length; r++) {
+      const line = rows[r];
+      for (let i = 0; i < w; i++) {
+        const ch = mir ? line[w - 1 - i] : line[i];
+        if (ch === '.') continue;
+        let type;
+        if (ch === '#') {
+          const roll = Math.random();
+          type = roll < bombP ? 'bomb' : roll < bombP + 0.03 ? 'gift' : roll < bombP + 0.07 ? 'mult' : 'normal';
+        } else type = CH[ch];
+        let hp = randInt(lo, hi);
+        if (Math.random() < 0.12) hp = Math.round(hp * 1.5);
+        bricks.push(mkBrick((ox + i) * CELL + GAP, (oy + r) * CELL + GAP, hp, type));
+      }
     }
+    oy += rows.length + 1;
   }
-  while (cells.length < COLS) {
-    const c = randInt(0, COLS - 1), r = randInt(0, rows - 1);
-    if (!cells.some(p => p.r === r && p.c === c)) cells.push({ r, c });
-  }
-  for (let i = cells.length - 1; i > 0; i--) {
-    const j = randInt(0, i);
-    [cells[i], cells[j]] = [cells[j], cells[i]];
-  }
-  let plusBudget = randInt(1, 3);
-  const bombP = Math.min(0.04 + lvl * 0.001, 0.08);
-  const giftP = 0.04, multP = 0.05, pierceP = 0.03, blastP = 0.03;
-  for (const cell of cells) {
-    const x = cell.c * CELL + GAP, y = cell.r * CELL + GAP;
-    if (plusBudget > 0 && Math.random() < 0.11) {
-      plusBudget--;
-      pickups.push(mkPickup(x, y));
-      continue;
-    }
-    let hp = randInt(lo, hi);
-    if (Math.random() < 0.12) hp = Math.round(hp * 1.5);
-    const roll = Math.random();
-    let type = 'normal';
-    if (roll < bombP) type = 'bomb';
-    else if (roll < bombP + giftP) type = 'gift';
-    else if (roll < bombP + giftP + multP) type = 'mult';
-    else if (roll < bombP + giftP + multP + pierceP) type = 'pierce';
-    else if (roll < bombP + giftP + multP + pierceP + blastP) type = 'blast';
-    bricks.push(mkBrick(x, y, hp, type));
+  let pb = randInt(1, 3);
+  const normals = bricks.filter(b => b.type === 'normal');
+  while (pb-- > 0 && normals.length) {
+    const k = normals.splice(randInt(0, normals.length - 1), 1)[0];
+    const idx = bricks.indexOf(k);
+    if (idx >= 0) { bricks.splice(idx, 1); pickups.push(mkPickup(k.x, k.y)); }
   }
   captureCheckpoint();
 }

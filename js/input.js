@@ -33,11 +33,10 @@ $('retryBtn').addEventListener('click', retryLevel);
 $('startOverBtn').addEventListener('click', resetGame);
 speedBtn.addEventListener('click', () => {
   ensureAudio();
-  if (mode === 'shooting' && speedMult === 1) {
-    speedMult = SPEED_BOOST;
-    addText(originX, LAUNCH_Y - 74, 'SPEED x' + SPEED_BOOST, '#fbbf24', 1, 17);
-    sfx.arm();
-  }
+  if (mode !== 'shooting' || speedMult >= MAX_SPEED) return;
+  speedMult = Math.min(MAX_SPEED, speedMult + SPEED_BOOST);
+  addText(originX, LAUNCH_Y - 74, 'SPEED x' + speedMult, '#fbbf24', 1, 17);
+  sfx.arm();
 });
 recallBtn.addEventListener('click', () => {
   ensureAudio();

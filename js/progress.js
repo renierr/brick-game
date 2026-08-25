@@ -27,14 +27,14 @@ function hydrate(d) {
     .map(o => ({
       uid: uidSeq++, x: o.x, y: o.y, w: BSIZE, h: BSIZE,
       hp: o.hp, maxHp: o.mh || o.hp,
-      type: ['bomb', 'gift', 'mult', 'pierce', 'blast'].includes(o.t) ? o.t : 'normal', flash: 0, dead: false
+      type: ['bomb', 'gift', 'mult', 'pierce', 'blast', 'rampA', 'rampB', 'orb'].includes(o.t) ? o.t : 'normal', flash: 0, dead: false
     }));
   pickups = (Array.isArray(d.pk) ? d.pk : [])
     .filter(o => o && typeof o.x === 'number' && typeof o.y === 'number')
-    .map(o => ({ x: o.x, y: o.y, r: o.r || 16, seed: o.s || 0 }));
+    .map(o => ({ x: o.x, y: o.y, r: o.r || 14, seed: o.s || 0 }));
   balls.length = 0; particles.length = 0; texts.length = 0; rings.length = 0;
   pendingShots = 0; firstLandX = null; aiming = false; aimPt = null;
-  pierceArmed = bombArmed = pierceFlag = bombFlag = false;
+  pierceCharges = 0; bombCharges = 0; pierceLeft = 0; bombLeft = 0;
   speedMult = 1; autoSped = false;
   shiftT = 0; betweenTimer = 0;
 }
