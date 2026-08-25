@@ -4,6 +4,8 @@ A browser clone of the classic brick-breaker *Bricks And Balls Crusher*: aim a v
 
 ## Play
 
+[renierr.github.io/brick-game/](https://renierr.github.io/brick-game/)
+
 Open `index.html` in any modern browser, or serve the folder:
 
 ```sh
