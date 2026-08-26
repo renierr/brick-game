@@ -35,7 +35,7 @@ speedBtn.addEventListener('click', () => {
   ensureAudio();
   if (mode !== 'shooting' || speedMult >= MAX_SPEED) return;
   speedMult = Math.min(MAX_SPEED, speedMult + SPEED_BOOST);
-  addText(originX, LAUNCH_Y - 74, 'SPEED x' + speedMult, '#fbbf24', 1, 17);
+  addText(W / 2, TOAST_Y, 'SPEED x' + speedMult, '#fbbf24', 1, 17);
   sfx.arm();
 });
 recallBtn.addEventListener('click', () => {

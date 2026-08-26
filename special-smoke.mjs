@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
-const FILES = ['config', 'state', 'audio', 'fx', 'board', 'actions', 'sim', 'render', 'progress', 'input', 'main'];
+const FILES = ['tiles', 'config', 'state', 'audio', 'fx', 'board', 'actions', 'sim', 'render', 'progress', 'input', 'main'];
 
 function makeCtx() {
   const base = { measureText: () => ({ width: 20 }) };
@@ -114,21 +114,53 @@ if (multBrick) {
   assert(run('score') - s0 >= multBrick.maxHp * 10 * 2, 'mult tile pays double points');
 } else console.log('ok - no mult on this board');
 
-run("bricks.length = 0");
-run("balls.length = 0");
-run("speedMult = 1");
-run("bricks.push(mkBrick(200, 100, 999, 'rampA'))");
-run("balls[0] = {x: 218, y: 80, vx: 0, vy: BALL_SPEED, pierce: false, bomb: false, hit: new Set(), cd: 0, shapeCd: 0, trail: []}");
-run("moveBalls(0.05)");
-let vb = JSON.parse(run('JSON.stringify([Math.round(balls[0].vx), Math.round(balls[0].vy)])'));
-assert(vb[0] <= -550 && Math.abs(vb[1]) < 40, 'rampA kicks a falling ball sideways');
+// A ramp is a triangle, so only the sloped face gives the quarter turn: the two flat
+// legs must bounce like a brick and the empty half of the cell must not collide at all.
+function rampShot(type, x, y, vx, vy) {
+  run('bricks.length = 0; balls.length = 0; speedMult = 1');
+  run(`bricks.push(mkBrick(200, 100, 999, '${type}'))`);
+  run(`balls[0] = {x: ${x}, y: ${y}, vx: ${vx} * BALL_SPEED, vy: ${vy} * BALL_SPEED, pierce: false, bomb: false, hit: new Set(), cd: 0, shapeCd: 0, trail: []}`);
+  for (let i = 0; i < 30 && run('balls.length'); i++) run('moveBalls(0.01)');
+  return {
+    v: run('balls.length ? [Math.round(balls[0].vx), Math.round(balls[0].vy)] : null'),
+    hp: run('bricks.length ? bricks[0].hp : 0')
+  };
+}
+let r = rampShot('rampA', 218, 80, 0, 1);
+assert(r.v[0] <= -550 && Math.abs(r.v[1]) < 40, 'rampA kicks a falling ball sideways');
+r = rampShot('rampB', 218, 80, 0, 1);
+assert(r.v[0] >= 550 && Math.abs(r.v[1]) < 40, 'rampB kicks a falling ball the other way');
+r = rampShot('rampA', 218, 160, 0, -1);
+assert(Math.abs(r.v[0]) < 40 && r.v[1] >= 550, "a ramp's flat bottom leg bounces straight back");
+r = rampShot('rampA', 260, 120, -1, 0);
+assert(r.v[0] >= 550 && Math.abs(r.v[1]) < 40, "a ramp's flat side leg bounces straight back");
+const SQ = Math.SQRT1_2;
+r = rampShot('rampA', 205, 118, SQ, -SQ);
+assert(r.hp === 999, 'the empty half of a rampA cell is air — a grazing ball passes through');
+r = rampShot('rampB', 232, 118, -SQ, -SQ);
+assert(r.hp === 999, 'the empty half of a rampB cell is air — a grazing ball passes through');
+run("bricks.length = 0; bricks.push(mkBrick(200, 100, 9, 'rampA'))");
+assert(run('hitRamp({x: 203, y: 103, vx: 0, vy: BALL_SPEED}, bricks[0])') === false &&
+  run('hitRamp({x: 232, y: 132, vx: 0, vy: BALL_SPEED}, bricks[0])') === true,
+  'rampA is solid only on its lower-right half');
+run("bricks.length = 0; bricks.push(mkBrick(200, 100, 9, 'rampB'))");
+assert(run('hitRamp({x: 233, y: 103, vx: 0, vy: BALL_SPEED}, bricks[0])') === false &&
+  run('hitRamp({x: 204, y: 132, vx: 0, vy: BALL_SPEED}, bricks[0])') === true,
+  'rampB is solid only on its lower-left half');
 
 run("bricks.length = 0; balls.length = 0");
 run("bricks.push(mkBrick(200, 100, 999, 'orb'))");
 run("balls[0] = {x: 196, y: 118, vx: BALL_SPEED, vy: 0, pierce: false, bomb: false, hit: new Set(), cd: 0, shapeCd: 0, trail: []}");
 run("moveBalls(0.03)");
-vb = JSON.parse(run('JSON.stringify([Math.round(balls[0].vx), Math.round(balls[0].vy)])'));
+const vb = JSON.parse(run('JSON.stringify([Math.round(balls[0].vx), Math.round(balls[0].vy)])'));
 assert(vb[0] <= -500 && Math.abs(vb[1]) < 60, 'orb bumper reflects the ball back');
+
+// An orb is a circle, so the corners of its cell are empty air.
+const probe = (x, y) => run(`collideBricks({x: ${x}, y: ${y}, vx: 0, vy: BALL_SPEED, pierce: false, bomb: false, hit: new Set(), cd: 0, shapeCd: 0, trail: []})`);
+run("bricks.length = 0; balls.length = 0");
+run("bricks.push(mkBrick(200, 100, 999, 'orb'))");
+assert(probe(196, 96) === false, 'a ball crossing the corner of an orb cell is not deflected');
+assert(probe(218, 96) === true, 'a ball meeting the orb itself is deflected');
 
 run("bricks.length = 0; balls.length = 0");
 run("speedMult = 1");

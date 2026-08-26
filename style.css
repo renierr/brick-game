@@ -109,6 +109,16 @@ canvas{
 .pw-name{flex:1;font-size:13px;font-weight:700;display:flex;flex-direction:column;gap:2px}
 .pw-name small{font-weight:500;color:#94a3b8;font-size:11px}
 .pw-inf{color:#34d399;font-weight:900;font-size:18px}
+#helpLink{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:min(292px,calc(100vw - 80px));margin:2px 0 12px;
+  border:1px solid rgba(56,189,248,.35);border-radius:14px;padding:10px 14px;
+  background:rgba(56,189,248,.09);color:#7dd3fc;text-decoration:none;
+  font-size:12px;font-weight:800;letter-spacing:.12em;
+  transition:background .15s,border-color .15s,color .15s,transform .12s
+}
+#helpLink:hover{background:rgba(56,189,248,.18);border-color:rgba(56,189,248,.7);color:#fff;transform:translateY(-1px)}
+#helpLink:active{transform:scale(.98)}
 #closePower{
   margin-top:4px;background:transparent;border:1px solid rgba(148,163,184,.3);color:#94a3b8;
   padding:9px 24px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.12em;

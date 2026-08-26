@@ -1,4 +1,35 @@
 'use strict';
+// A ramp is a right triangle, not a box: two flat legs plus the 45° hypotenuse,
+// and the other half of the cell is empty air the ball must fly straight through.
+// Treat it as the intersection of three half-planes, resolve against the one the
+// ball has entered least far (the same minimum-penetration rule the box path uses),
+// and reflect off that face — so a leg bounces like a brick and only the slope
+// gives the quarter turn. Returns false when the ball is in the empty half.
+function hitRamp(b, k) {
+  const a = k.type === 'rampA';
+  const w = k.w, h = k.h, L = Math.hypot(w, h);
+  // Outward face normals and the ball's distance outside each face.
+  const faces = [
+    { nx: 0, ny: 1, d: b.y - (k.y + h) },                                   // flat bottom
+    a ? { nx: 1, ny: 0, d: b.x - (k.x + w) } : { nx: -1, ny: 0, d: k.x - b.x }, // flat side
+    a
+      ? { nx: -h / L, ny: -w / L, d: (w * h - (b.x - k.x) * h - (b.y - k.y) * w) / L }
+      : { nx: h / L, ny: -w / L, d: ((b.x - k.x) * h - (b.y - k.y) * w) / L }    // hypotenuse
+  ];
+  let best = null;
+  for (const f of faces) {
+    const depth = BALL_R - f.d;
+    if (depth <= 0) return false;   // clear of this face, so clear of the triangle
+    if (!best || depth < best.depth) best = { f, depth };
+  }
+  const f = best.f;
+  b.x += f.nx * best.depth;
+  b.y += f.ny * best.depth;
+  const dot = b.vx * f.nx + b.vy * f.ny;
+  if (dot < 0) { b.vx -= 2 * dot * f.nx; b.vy -= 2 * dot * f.ny; }
+  return true;
+}
+
 function collideBricks(b) {
   for (const k of bricks) {
     if (k.dead) continue;
@@ -6,9 +37,7 @@ function collideBricks(b) {
     if (b.x < l || b.x > r || b.y < t || b.y > bt) continue;
     if (k.type === 'rampA' || k.type === 'rampB') {
       if (b.shapeCd > 0) continue;
-      const vx = b.vx;
-      if (k.type === 'rampA') { b.vx = -b.vy; b.vy = -vx; }
-      else { b.vx = b.vy; b.vy = vx; }
+      if (!hitRamp(b, k)) continue;
       b.shapeCd = 0.09;
       damage(k, 1);
       return true;
@@ -16,13 +45,16 @@ function collideBricks(b) {
     if (k.type === 'orb') {
       if (b.shapeCd > 0) continue;
       const cx = k.x + k.w / 2, cy = k.y + k.h / 2;
+      const rad = k.w / 2 + BALL_R + 0.5;
       let nx = b.x - cx, ny = b.y - cy;
       const d = Math.hypot(nx, ny) || 1;
+      // An orb is round, so the cell's corners are empty air: test the circle, not
+      // the box the outer loop matched on.
+      if (d > rad) continue;
       nx /= d; ny /= d;
       const dot = b.vx * nx + b.vy * ny;
       b.vx -= 2 * dot * nx;
       b.vy -= 2 * dot * ny;
-      const rad = k.w / 2 + BALL_R + 0.5;
       b.x = cx + nx * rad;
       b.y = cy + ny * rad;
       b.shapeCd = 0.09;

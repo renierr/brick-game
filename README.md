@@ -1,6 +1,6 @@
-# Bricks And Balls Crusher
+# Ricochet
 
-A browser clone of the classic brick-breaker *Bricks And Balls Crusher*: aim a volley of bouncing balls, crush numbered bricks, and ride endlessly through self-generating levels.
+A browser take on the classic brick-breaker *Bricks And Balls Crusher*: aim a volley of bouncing balls, crush numbered bricks, and ride endlessly through self-generating levels.
 
 ## Play
 
@@ -31,16 +31,20 @@ Except the (+) pickup, every tile carries HP and breaks like a normal brick; the
 | Tile | Looks like | Effect |
 | --- | --- | --- |
 | **Brick** | numbered rounded block | Plain target. HP shown; each hit removes 1. Points = `maxHP × 10 + level × 2`. |
-| **Bomb** | dark fuse sphere | **Dies to a single hit regardless of HP** and explodes: everything within ~2 cells takes lethal damage. Chains through other bombs. |
+| **Bomb** | a fuse sphere, no tile plate behind it | **Dies to a single hit regardless of HP** and explodes: everything within ~2 cells takes lethal damage. Chains through other bombs. |
 | **Gift (?)** | white `?` | On destruction fires one **random power-up**: +10 balls, Pierce charge, Bomb charge, or Clear Row (25% each). |
 | **×2 multiplier** | white `×2` | Pays **double points** when destroyed, with its own `+N x2!` popup. |
 | **Pierce (»)** | double chevron | Banks a **pierce charge**. One ball of your next volley drills straight through bricks instead of bouncing, damaging each brick it passes once. |
 | **Blast** | white starburst | Banks a **bomb charge**. One ball of your next volley explodes on every impact for up to **50 damage** in a radius. |
-| **Ramp** | filled triangle | Not a bouncer — a **90° deflector**. Rotates the ball's velocity a quarter turn (`/` and `\` turn opposite ways) and takes 1 damage. Redirects a vertical volley sideways across the board. |
-| **Orb** | circle with highlight | A **round bumper**: reflects off its curved surface instead of a flat face, so outgoing angles fan out. Takes 1 damage per bounce. |
+| **Ramp** | a solid triangle filling half its cell | Three distinct faces. The **45° slope deflects the ball a quarter turn** (`/` and `\` turn opposite ways) — a vertical volley leaves sideways. The two flat legs bounce like an ordinary tile, and **the empty half of the cell is air the ball passes straight through**. |
+| **Orb** | circle with highlight | A **round bumper**: reflects off its curved surface instead of a flat face, so outgoing angles fan out from where it was struck. Being round, **the corners of its cell are empty air**. Takes 1 damage per bounce. |
 | **(+) pickup** | green pulsing plus | Not a brick — no HP, cannot be shot away. Collected on touch, permanently **+1 ball** to your stash. |
 
 Ramps and orbs have a short per-ball cooldown (~0.09 s), so a ball cannot get stuck ping-ponging inside a cluster of them.
+
+The same reference, with the tiles drawn by the game itself and looping animations of the four that
+bend a ball's path, is on the in-game help page — the **HOW TO PLAY** button in the power-up menu
+opens `help.html` in a new tab.
 
 **Charges stack**: bank several pierce/blast tiles (or tap the menu repeatedly) and several balls of your next volley inherit the effect — consumed one per ball as the volley fires. A ball can be both pierce *and* bomb.
 
@@ -309,7 +313,11 @@ On game over you can **Retry Level** (default — the board is restored exactly 
 
 ## Tech
 
-Vanilla HTML5 Canvas + Web Audio. The code is split by concern under `js/` (`config`, `state`, `audio`, `fx`, `board`, `actions`, `sim`, `render`, `progress`, `input`, `main`) and loaded with plain `<script>` tags sharing globals — no modules, no bundler, no build step; opening `index.html` straight from disk works. Fixed 480x760 logical resolution scaled to fit any screen; sub-stepped circle/AABB physics keeps fast volleys tunnel-free.
+`js/tiles.js` is deliberately free of DOM and game state: it holds the board geometry and the
+tile painter, so `help.html` draws its legend with the game's own code and can never drift from
+what a player actually sees on the board.
+
+Vanilla HTML5 Canvas + Web Audio. The code is split by concern under `js/` (`tiles`, `config`, `state`, `audio`, `fx`, `board`, `actions`, `sim`, `render`, `progress`, `input`, `main`) and loaded with plain `<script>` tags sharing globals — no modules, no bundler, no build step; opening `index.html` straight from disk works. Fixed 480x760 logical resolution scaled to fit any screen; sub-stepped circle/AABB physics keeps fast volleys tunnel-free.
 
 Headless smoke tests live in the repo root (not part of the game itself) — run them with Node, zero dependencies:
 

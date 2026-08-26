@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Play &middot; Ricochet</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  background:radial-gradient(1200px 800px at 50% -10%,#1b2033,#0b0d14 60%) #0b0d14;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:#e2e8f0;line-height:1.6;padding:0 0 60px;
+  padding-left:max(0px,env(safe-area-inset-left));padding-right:max(0px,env(safe-area-inset-right))
+}
+.wrap{max-width:880px;margin:0 auto;padding:0 18px}
+
+/* ---------- top bar ---------- */
+header{
+  position:sticky;top:0;z-index:20;background:rgba(11,13,20,.86);backdrop-filter:blur(8px);
+  border-bottom:1px solid rgba(148,163,184,.14)
+}
+header .wrap{display:flex;align-items:center;gap:12px;padding:11px 18px}
+header h1{font-size:15px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;flex:1;min-width:0}
+header h1 small{display:block;font-size:10px;letter-spacing:.16em;color:#94a3b8;font-weight:700}
+.backbtn{
+  flex:none;display:inline-flex;align-items:center;gap:7px;text-decoration:none;
+  background:linear-gradient(135deg,#38bdf8,#6366f1);color:#fff;font-weight:800;font-size:12px;
+  letter-spacing:.09em;padding:9px 17px;border-radius:999px;white-space:nowrap;
+  transition:transform .12s,box-shadow .2s
+}
+.backbtn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,.45)}
+
+/* ---------- table of contents ---------- */
+nav.toc{display:flex;flex-wrap:wrap;gap:7px;margin:22px 0 6px}
+nav.toc a{
+  text-decoration:none;color:#cbd5e1;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  background:rgba(13,16,26,.72);border:1px solid rgba(148,163,184,.18);
+  border-radius:999px;padding:6px 13px;transition:color .15s,border-color .15s,background .15s
+}
+nav.toc a:hover{color:#fff;border-color:rgba(56,189,248,.5);background:rgba(56,189,248,.14)}
+
+/* ---------- sections ---------- */
+section{margin-top:42px;scroll-margin-top:64px}
+h2{
+  font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#38bdf8;
+  padding-bottom:9px;border-bottom:1px solid rgba(148,163,184,.16);margin-bottom:18px
+}
+h3{font-size:15px;font-weight:800;margin:26px 0 9px}
+p{margin-bottom:12px;color:#cbd5e1}
+p.lead{font-size:16px;color:#e2e8f0}
+strong{color:#fff}
+em{color:#fbbf24;font-style:normal;font-weight:700}
+ul,ol{margin:0 0 14px 20px;color:#cbd5e1}
+li{margin-bottom:6px}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
+  background:rgba(148,163,184,.14);border-radius:5px;padding:1px 6px;color:#e2e8f0
+}
+.note{
+  background:rgba(56,189,248,.08);border-left:3px solid #38bdf8;border-radius:0 10px 10px 0;
+  padding:11px 15px;margin:16px 0;font-size:13.5px;color:#cbd5e1
+}
+
+/* ---------- board anatomy ---------- */
+.anatomy{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+.anatomy figure{flex:0 0 auto;margin:0 auto}
+.anatomy canvas{
+  display:block;width:min(300px,72vw);height:auto;border-radius:16px;background:#10121c;
+  box-shadow:0 24px 60px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.05)
+}
+.anatomy ol{flex:1 1 300px;list-style:none;margin:0;counter-reset:pin}
+.anatomy ol li{
+  counter-increment:pin;position:relative;padding-left:34px;margin-bottom:12px;font-size:13.5px
+}
+.anatomy ol li::before{
+  content:counter(pin);position:absolute;left:0;top:1px;width:23px;height:23px;border-radius:999px;
+  display:grid;place-items:center;font-size:11.5px;font-weight:900;color:#0b0d14;background:#38bdf8
+}
+.anatomy ol li b{color:#fff;display:block}
+
+/* ---------- turn strip ---------- */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.step{
+  background:#141827;border:1px solid rgba(148,163,184,.16);border-radius:16px;padding:14px;
+  text-align:center
+}
+.step canvas{display:block;width:100%;height:auto;border-radius:10px;background:#10121c;margin-bottom:10px}
+.step b{display:block;font-size:13px;margin-bottom:3px}
+.step span{font-size:12px;color:#94a3b8}
+
+/* ---------- tile cards ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:14px}
+.tile{
+  display:flex;gap:14px;background:#141827;border:1px solid rgba(148,163,184,.16);
+  border-radius:16px;padding:15px
+}
+.tile .art{flex:none;display:flex;flex-direction:column;align-items:center;gap:7px}
+.tile canvas{display:block;border-radius:6px}
+.tile .glyph{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;font-weight:700;
+  color:#64748b;background:rgba(148,163,184,.1);border-radius:5px;padding:1px 7px
+}
+.tile .txt{flex:1;min-width:0}
+.tile h4{font-size:13.5px;font-weight:800;margin-bottom:4px}
+.tile p{font-size:12.5px;margin-bottom:8px;color:#94a3b8;line-height:1.5}
+.tile .when{
+  font-size:11px;font-weight:700;letter-spacing:.04em;color:#7dd3fc;
+  background:rgba(56,189,248,.1);border-radius:6px;padding:4px 8px;display:inline-block
+}
+
+/* ---------- behaviour demos ---------- */
+.demos{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
+.demo{background:#141827;border:1px solid rgba(148,163,184,.16);border-radius:16px;padding:13px}
+.demo canvas{display:block;width:100%;height:auto;border-radius:10px;background:#10121c}
+.demo b{display:block;font-size:13px;margin:10px 0 3px}
+.demo span{font-size:12px;color:#94a3b8}
+
+/* ---------- unlock timeline ---------- */
+.timeline{position:relative;margin:24px 0 8px;padding-left:2px}
+.timeline::before{
+  content:"";position:absolute;left:26px;top:6px;bottom:6px;width:2px;
+  background:linear-gradient(#38bdf8,rgba(56,189,248,.12))
+}
+.tl{position:relative;display:flex;gap:16px;align-items:flex-start;padding:0 0 16px 0}
+.tl .lv{
+  flex:none;width:54px;text-align:center;font-size:10px;font-weight:800;letter-spacing:.08em;
+  color:#0b0d14;background:#38bdf8;border-radius:999px;padding:4px 0;position:relative;z-index:2
+}
+.tl .what{flex:1;font-size:13px;padding-top:1px}
+.tl .what b{color:#fff}
+.tl .what small{display:block;color:#94a3b8;font-size:12px}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:14px}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:13px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid rgba(148,163,184,.13);vertical-align:top}
+th{
+  font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#94a3b8;font-weight:800;
+  border-bottom-color:rgba(148,163,184,.28);white-space:nowrap
+}
+td:first-child{font-weight:700;color:#fff;white-space:nowrap}
+tbody tr:hover{background:rgba(148,163,184,.05)}
+
+footer{margin-top:52px;padding-top:20px;border-top:1px solid rgba(148,163,184,.14);
+  font-size:12px;color:#64748b;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+footer a{color:#7dd3fc;text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+@media (max-width:520px){
+  .wrap{padding:0 13px}
+  header .wrap{padding:10px 13px}
+  header h1{font-size:13px}
+  .tile{padding:13px;gap:11px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>How to Play<small>Ricochet</small></h1>
+    <a class="backbtn" href="index.html">&#9664; BACK TO GAME</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <a href="#goal">The goal</a>
+    <a href="#board">The board</a>
+    <a href="#turn">A turn</a>
+    <a href="#tiles">Tiles</a>
+    <a href="#behaviour">How they behave</a>
+    <a href="#spawn">When tiles appear</a>
+    <a href="#buttons">Buttons &amp; menu</a>
+    <a href="#progress">Saving</a>
+  </nav>
+
+  <section id="goal">
+    <h2>The goal</h2>
+    <p class="lead">Drag to aim, release to fire a swarm of bouncing balls, and break every tile
+      on the board before the tiles reach the bottom.</p>
+    <p>Each tile shows a number &mdash; its <strong>HP</strong>. Every ball that touches it takes
+      1 off. At zero the tile shatters and pays points. Clear the whole board and you advance a
+      level, gain balls, and get a freshly generated layout.</p>
+    <p>But after <em>every</em> volley the entire board slides down one row. Let a tile cross the
+      red danger line at the bottom and the run is over. There is no last level &mdash; only your
+      best score.</p>
+  </section>
+
+  <section id="board">
+    <h2>The board, part by part</h2>
+    <div class="anatomy">
+      <figure><canvas id="anatomy" width="480" height="760" role="img"
+        aria-label="Diagram of the play field with numbered callouts"></canvas></figure>
+      <ol>
+        <li><b>Hidden rows</b>A tall layout can start above the top edge. Those rows slide into
+          view one per turn, so new tiles keep arriving.</li>
+        <li><b>Tiles</b>The layout is cut from a hand-drawn stencil on a 13-column grid, so every
+          board is a recognisable shape &mdash; a heart, an invader, a spider.</li>
+        <li><b>Colour = toughness</b>Orange is soft, red and violet are tough. The number is the
+          exact HP left.</li>
+        <li><b>Ball pickup</b>The green <strong>(+)</strong> circle is not a tile and cannot be
+          broken. Touch it with any ball and your stash grows by one, permanently.</li>
+        <li><b>Danger line</b>The dashed red line. If any tile ends a turn below it, the run ends.</li>
+        <li><b>Charge chips</b>Banked pierce and bomb charges show here, always in the same
+          spot, until your next volley spends them.</li>
+        <li><b>Launcher</b>Where your balls come from, with the size of your stash on it. It moves
+          to wherever the first ball came back down, so your next shot starts from there.</li>
+        <li><b>Aim preview</b>While you drag, the dashed line shows the path and the first tile
+          you will hit &mdash; including bounces off the walls.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="turn">
+    <h2>How one turn plays out</h2>
+    <div class="steps">
+      <div class="step">
+        <canvas id="stepAim" width="240" height="200" role="img" aria-label="Aiming with the dashed preview"></canvas>
+        <b>1 &middot; Aim</b><span>Drag anywhere on the board. Straight sideways is not allowed &mdash;
+          shots always go at least slightly upward.</span>
+      </div>
+      <div class="step">
+        <canvas id="stepFire" width="240" height="200" role="img" aria-label="A volley of balls in flight"></canvas>
+        <b>2 &middot; Fire</b><span>Release, and your balls leave one after another along that
+          line, up to 100 per turn. They bounce until every one drops off the bottom.</span>
+      </div>
+      <div class="step">
+        <canvas id="stepDrop" width="240" height="200" role="img" aria-label="The board dropping one row"></canvas>
+        <b>3 &middot; Drop</b><span>The whole board slides down one row and the launcher moves under
+          your first returning ball. Then it is your turn again.</span>
+      </div>
+    </div>
+    <div class="note">A volley that gets stuck can never trap you: hit <strong>Recall</strong> to
+      bring the balls home at once, or <strong>Speed</strong> to fast-forward. If a volley runs
+      long, the game speeds it up by itself.</div>
+  </section>
+
+  <section id="tiles">
+    <h2>Every tile and what it does</h2>
+    <p>These are drawn by the game itself, so what you see here is exactly what you see on the
+      board. Apart from the pickup, every one of them carries HP and breaks like a normal tile
+      &mdash; the effect described is what happens <em>on top of that</em>.</p>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section id="behaviour">
+    <h2>The four that change how balls move</h2>
+    <p>Plain tiles just bounce a ball off the face it hit. These four do something else &mdash;
+      watch them loop:</p>
+    <div class="demos" id="demos"></div>
+    <div class="note">Ramps and orbs have a brief cooldown per ball, so a ball can never get
+      stuck rattling inside a cluster of them.</div>
+  </section>
+
+  <section id="spawn">
+    <h2>When each tile appears</h2>
+    <p>Special tiles reach the board three different ways, so no kind depends on a single layout
+      being drawn:</p>
+    <ol>
+      <li><b>Baked into the stencil</b> &mdash; hand-placed accents that are part of a shape:
+        the invader's orb eyes, the castle's pierce towers. Only when that shape comes up.</li>
+      <li><b>Rolled per tile</b> &mdash; every plain tile independently rolls a small chance of
+        being a bomb, a gift or a multiplier. These show up on nearly every board.</li>
+      <li><b>Seeded per board</b> &mdash; once the shape is laid out, each of the exotic kinds
+        gets one chance to claim a few plain tiles. This is what keeps ramps and orbs in
+        circulation. It is skipped when the shape already provides enough of that kind.</li>
+    </ol>
+
+    <h3>Unlock order</h3>
+    <p>The exotic kinds hold back for the first levels, so you learn the basics before the board
+      starts bending your shots. Before its unlock level a kind can still turn up, but only if its
+      stencil happens to be drawn.</p>
+    <div class="timeline">
+      <div class="tl"><span class="lv">LV 1</span><span class="what"><b>Bricks, bombs, gifts, ×2 multipliers, (+) pickups</b><small>The basics, from your very first board.</small></span></div>
+      <div class="tl"><span class="lv">LV 3</span><span class="what"><b>Blast tiles</b><small>Your first banked charge — explosive balls.</small></span></div>
+      <div class="tl"><span class="lv">LV 5</span><span class="what"><b>Pierce tiles</b><small>Drill-through balls join the mix.</small></span></div>
+      <div class="tl"><span class="lv">LV 7</span><span class="what"><b>Orb bumpers</b><small>Round tiles start fanning your volley out.</small></span></div>
+      <div class="tl"><span class="lv">LV 8</span><span class="what"><b>Double shapes</b><small>Two stencils usually stack into one bigger composition.</small></span></div>
+      <div class="tl"><span class="lv">LV 10</span><span class="what"><b>Ramps</b><small>Quarter-turn deflectors — the board starts steering you.</small></span></div>
+    </div>
+
+    <h3>Exact rates</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Tile</th><th>Comes from</th><th>From level</th><th>How often</th></tr></thead>
+        <tbody>
+          <tr><td>Bomb</td><td>per-tile roll</td><td>1</td><td>2% of plain tiles, creeping up to 4% as levels climb</td></tr>
+          <tr><td>Gift (?)</td><td>per-tile roll</td><td>1</td><td>3% of plain tiles</td></tr>
+          <tr><td>×2 multiplier</td><td>per-tile roll + stencil</td><td>1</td><td>4% of plain tiles</td></tr>
+          <tr><td>Blast</td><td>seeded + stencil</td><td>3</td><td>55% of boards get 1&ndash;2</td></tr>
+          <tr><td>Pierce</td><td>seeded + stencil</td><td>5</td><td>50% of boards get 1&ndash;2</td></tr>
+          <tr><td>Orb bumper</td><td>seeded + stencil</td><td>7</td><td>50% of boards get 1&ndash;3</td></tr>
+          <tr><td>Ramp</td><td>seeded + stencil</td><td>10</td><td>45% of boards get 2&ndash;4, each leaning left or right at random</td></tr>
+          <tr><td>(+) pickup</td><td>always</td><td>1</td><td>1&ndash;3 on every board, replacing plain tiles</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>In practice a late board of roughly 54 tiles carries about 2 bombs, 2 gifts, 2 multipliers,
+      1 blast, 1 pierce, a couple of orbs and a couple of ramps.</p>
+
+    <h3>Where the layout can sit</h3>
+    <ul>
+      <li>A clear zone of about three rows above the danger line is always kept free, so no tile
+        ever spawns inside your launch area and everything stays reachable.</li>
+      <li>At most four rows may start hidden above the top edge, and at least one row is always
+        visible &mdash; a board is never entirely off-screen.</li>
+      <li>Shapes are centred on the grid and randomly mirrored, so the same stencil never feels
+        quite the same twice.</li>
+      <li>HP keeps scaling with the level, and about one tile in eight is reinforced to
+        roughly one and a half times the going rate.</li>
+    </ul>
+  </section>
+
+  <section id="buttons">
+    <h2>Buttons, chips and the menu</h2>
+    <h3>Top bar</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Item</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>SCORE</td><td>Points this run.</td></tr>
+          <tr><td>BEST</td><td>Your record, kept between runs.</td></tr>
+          <tr><td>LV</td><td>Current level. It never stops climbing.</td></tr>
+          <tr><td>Blue dot</td><td>How many balls your next volley fires (up to 100 per turn).</td></tr>
+          <tr><td>Speaker</td><td>Mute or unmute.</td></tr>
+          <tr><td>Circular arrow</td><td>Replay the current level from how it looked at the start.</td></tr>
+          <tr><td>Grid</td><td>Open the power-up menu.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Below the board</h3>
+    <ul>
+      <li><b>Recall</b> (down arrow) &mdash; during a volley, pulls every ball home instantly and
+        ends the turn. Nothing can ever leave you waiting on a stuck ball.</li>
+      <li><b>Speed</b> (double chevron) &mdash; during a volley, each press stacks another boost:
+        3&times;, 6&times;, 9&times;, then 10&times;. It resets when the turn ends, and kicks in on
+        its own if a volley drags past a few seconds.</li>
+    </ul>
+
+    <h3>Power-up menu</h3>
+    <p>Open with the grid button. Every entry is unlimited &mdash; use them whenever you like.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Power-up</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>+10 Balls</td><td>Ten more balls in your stash, up to 150. Trimmed back to 100 each time you clear a level.</td></tr>
+          <tr><td>Pierce Volley</td><td>Banks one pierce charge — the same thing a pierce tile gives you.</td></tr>
+          <tr><td>Bomb Volley</td><td>Banks one bomb charge — the same thing a blast tile gives you.</td></tr>
+          <tr><td>Clear Row</td><td>Wipes the lowest row of tiles outright. Your escape hatch when the board is nearly at the line.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><b>Charges stack.</b> Bank three pierce charges and the first three balls of
+      your next volley drill through. A single ball can be pierce <em>and</em> bomb at once. The
+      chips above the launcher always tell you what is waiting.</div>
+  </section>
+
+  <section id="progress">
+    <h2>Saving and starting over</h2>
+    <ul>
+      <li>Your level, score, ball count and the exact board are saved automatically. Close the tab
+        mid-level and you pick up where you stopped.</li>
+      <li>A volley keeps resolving in real time even if you switch tabs mid-turn.</li>
+      <li>On game over, <b>Retry Level</b> puts the board back exactly as it looked when the level
+        began. <b>Start Over</b> goes back to level 1.</li>
+      <li>Your best score survives everything.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <a href="index.html">&#9664; Back to the game</a>
+    <span>Good luck &mdash; there is no final level, only your best score.</span>
+  </footer>
+</div>
+
+<script src="js/tiles.js"></script>
+<script>
+'use strict';
+// This page paints tiles with the game's own painter (js/tiles.js), so the legend
+// below can never drift from what the board actually shows.
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+const CHIP_Y_DOC = LAUNCH_Y - 40;   // matches CHIP_Y in js/config.js
+
+function setup(cv, lw, lh) {
+  cv.width = lw * DPR; cv.height = lh * DPR;
+  const g = cv.getContext('2d');
+  g.setTransform(DPR, 0, 0, DPR, 0, 0);
+  return g;
+}
+const brick = (type, hp) => ({ type, hp, maxHp: hp, flash: 0 });
+
+/* ---------------- tile gallery ---------------- */
+const TILE_PX = 62;
+const TILES = [
+  { b: brick('normal', 7), glyph: '#', name: 'Brick',
+    what: 'The plain target. Each hit removes 1 HP; at zero it shatters. Tougher tiles are worth more points.',
+    when: 'Every board, everywhere' },
+  { b: brick('bomb', 9), glyph: 'B', name: 'Bomb',
+    what: 'Dies to a single hit no matter what its number says, and takes out everything within about two tiles. Bombs set off other bombs, so a good line can cascade across the board.',
+    when: '2–4% of plain tiles · from level 1' },
+  { b: brick('gift', 6), glyph: 'G', name: 'Gift',
+    what: 'Breaking it fires one power-up at random: +10 balls, a pierce charge, a bomb charge, or a cleared row. Equal odds on all four.',
+    when: '3% of plain tiles · from level 1' },
+  { b: brick('mult', 8), glyph: 'M', name: '×2 multiplier',
+    what: 'Pays double points when it breaks. Otherwise an ordinary tile — save it for last and the whole board is worth more.',
+    when: '4% of plain tiles · from level 1' },
+  { b: brick('pierce', 5), glyph: 'P', name: 'Pierce tile',
+    what: 'Banks a pierce charge. One ball of your next volley drills straight through tiles instead of bouncing, damaging every tile along its line.',
+    when: '50% of boards · from level 5' },
+  { b: brick('blast', 5), glyph: 'X', name: 'Blast tile',
+    what: 'Banks a bomb charge. One ball of your next volley explodes on every impact, hurting a small radius instead of a single tile.',
+    when: '55% of boards · from level 3' },
+  { b: brick('rampA', 4), glyph: '/  \\', name: 'Ramp',
+    what: 'A solid triangle filling half its cell. Hit the sloped face and the ball leaves at ninety degrees, the two leanings turning opposite ways — a ramp can throw a straight-up volley right across the board. The two flat sides bounce like an ordinary tile, and the empty half of the cell is air the ball flies straight through.',
+    when: '45% of boards · from level 10' },
+  { b: brick('orb', 4), glyph: 'O', name: 'Orb bumper',
+    what: 'Round, so balls come off its curve at wildly different angles instead of straight back. Great for spreading a volley into corners you cannot aim at.',
+    when: '50% of boards · from level 7' },
+  { pickup: true, glyph: '+', name: 'Ball pickup',
+    what: 'Not a tile: it has no HP and cannot be shot away. Touch it with any ball and your stash grows by one for the rest of the run.',
+    when: '1–3 on every board' }
+];
+
+const tilesEl = document.getElementById('tiles');
+for (const t of TILES) {
+  const card = document.createElement('div');
+  card.className = 'tile';
+  card.innerHTML = '<div class="art"><canvas></canvas><span class="glyph">' + t.glyph +
+    '</span></div><div class="txt"><h4></h4><p></p><span class="when"></span></div>';
+  card.querySelector('h4').textContent = t.name;
+  card.querySelector('p').textContent = t.what;
+  card.querySelector('.when').textContent = t.when;
+  const cv = card.querySelector('canvas');
+  cv.style.width = TILE_PX + 'px'; cv.style.height = TILE_PX + 'px';
+  const g = setup(cv, TILE_PX, TILE_PX);
+  g.scale(TILE_PX / BSIZE, TILE_PX / BSIZE);
+  if (t.pickup) paintPickup(g, BSIZE / 2, BSIZE / 2, 14, 0);
+  else paintTile(g, t.b, 0, 0, BSIZE, BSIZE);
+  tilesEl.appendChild(card);
+}
+
+/* ---------------- board anatomy ---------------- */
+function pin(g, n, x, y, tx, ty) {
+  g.strokeStyle = 'rgba(56,189,248,0.75)';
+  g.lineWidth = 1.5;
+  g.setLineDash([4, 4]);
+  g.beginPath(); g.moveTo(x, y); g.lineTo(tx, ty); g.stroke();
+  g.setLineDash([]);
+  g.fillStyle = '#38bdf8';
+  g.beginPath(); g.arc(tx, ty, 13, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#0b0d14';
+  g.font = '900 15px system-ui,sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(n, tx, ty + 1);
+}
+
+(function anatomy() {
+  const g = setup(document.getElementById('anatomy'), W, H);
+  g.fillStyle = '#10121c';
+  g.fillRect(0, 0, W, H);
+
+  // hidden rows above the top edge, shown as a ghosted band
+  g.fillStyle = 'rgba(56,189,248,0.07)';
+  g.fillRect(0, 0, W, CELL * 1.5);
+  g.strokeStyle = 'rgba(125,211,252,0.4)';
+  g.lineWidth = 1.5; g.setLineDash([7, 6]);
+  g.beginPath(); g.moveTo(0, CELL * 1.5); g.lineTo(W, CELL * 1.5); g.stroke();
+  g.setLineDash([]);
+
+  // danger zone
+  g.fillStyle = 'rgba(239,68,68,0.07)';
+  g.fillRect(0, DANGER_Y, W, H - DANGER_Y);
+  g.strokeStyle = 'rgba(248,113,113,0.55)';
+  g.lineWidth = 1.5; g.setLineDash([10, 8]);
+  g.beginPath(); g.moveTo(0, DANGER_Y); g.lineTo(W, DANGER_Y); g.stroke();
+  g.setLineDash([]);
+
+  // a small hand-built layout, laid out on the real grid
+  const rows = [
+    '..#.......#..',
+    '...#.....#...',
+    '..#######M#..',
+    '.##..O.O..##.',
+    '####X###P####',
+    '#.##/###\\##.#',
+    '#.#..G.B..#.#',
+    '....##.##....'
+  ];
+  const CHARS = { B: 'bomb', G: 'gift', M: 'mult', P: 'pierce', X: 'blast', '/': 'rampA', '\\': 'rampB', O: 'orb' };
+  const top = 0.6, hps = [3, 9, 17, 28, 44];
+  rows.forEach((line, r) => {
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '.') continue;
+      const type = CHARS[ch] || 'normal';
+      const hp = type === 'normal' ? hps[(r + i) % hps.length] : 4 + ((r * 3 + i) % 9);
+      paintTile(g, brick(type, hp), i * CELL, (top + r) * CELL, BSIZE, BSIZE);
+    }
+  });
+  paintPickup(g, 3.5 * CELL, 9.9 * CELL, 14, 0);
+
+  // aim preview
+  g.strokeStyle = 'rgba(255,255,255,0.6)';
+  g.lineWidth = 2; g.setLineDash([3, 11]);
+  g.beginPath();
+  g.moveTo(W / 2, LAUNCH_Y); g.lineTo(W - 8, 470); g.lineTo(300, 372);
+  g.stroke();
+  g.setLineDash([]);
+  g.fillStyle = '#fff';
+  g.beginPath(); g.arc(300, 372, 4, 0, Math.PI * 2); g.fill();
+
+  // launcher
+  g.fillStyle = 'rgba(56,189,248,0.25)';
+  g.beginPath(); g.arc(W / 2, LAUNCH_Y, 19, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#38bdf8';
+  g.beginPath(); g.arc(W / 2, LAUNCH_Y, 13, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#fff';
+  g.font = '800 11px system-ui,sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('24', W / 2, LAUNCH_Y + 1);
+
+  // charge chips, exactly where the game puts them
+  function chip(str, x, color) {
+    g.font = '800 10px system-ui,sans-serif';
+    const w = g.measureText(str).width + 14;
+    rr(g, x - w / 2, CHIP_Y_DOC, w, 17, 8);
+    g.fillStyle = 'rgba(13,16,26,0.85)'; g.fill();
+    g.strokeStyle = color; g.lineWidth = 1; g.stroke();
+    g.fillStyle = color;
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(str, x, CHIP_Y_DOC + 9);
+  }
+  chip('PIERCE ×2', W / 2 - 62, '#a78bfa');
+  chip('BOMB', W / 2 + 62, '#fb923c');
+
+  pin(g, 1, 150, 20, 60, 22);
+  pin(g, 2, 250, 100, 404, 78);
+  pin(g, 3, 60, 175, 30, 205);
+  pin(g, 4, 3.5 * CELL, 9.9 * CELL, 60, 400);
+  pin(g, 5, 300, DANGER_Y, 380, 650);
+  pin(g, 6, W / 2 - 62, CHIP_Y_DOC + 8, 90, 690);
+  pin(g, 7, W / 2 + 22, LAUNCH_Y, 330, 725);
+  pin(g, 8, 380, 430, 300, 470);
+})();
+
+/* ---------------- turn strip ---------------- */
+function miniBoard(g, w, h) {
+  g.fillStyle = '#10121c';
+  g.fillRect(0, 0, w, h);
+  g.fillStyle = 'rgba(239,68,68,0.08)';
+  g.fillRect(0, h - 20, w, 20);
+  g.strokeStyle = 'rgba(248,113,113,0.5)';
+  g.lineWidth = 1.2; g.setLineDash([6, 5]);
+  g.beginPath(); g.moveTo(0, h - 20); g.lineTo(w, h - 20); g.stroke();
+  g.setLineDash([]);
+}
+const MINI = 26; // tile size in the small diagrams
+
+function miniRows(g, rowY) {
+  const layout = ['.#####.', '..###..', '...#...'];
+  layout.forEach((line, r) => {
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '.') continue;
+      const hp = 4 + ((r * 3 + i) % 5) * 7;
+      paintTileScaled(g, brick('normal', hp), (i + 0.5) * MINI, rowY + r * MINI);
+    }
+  });
+}
+function paintTileScaled(g, b, x, y) {
+  g.save();
+  g.translate(x, y);
+  g.scale(MINI / BSIZE, MINI / BSIZE);
+  paintTile(g, b, 0, 0, BSIZE, BSIZE);
+  g.restore();
+}
+function launcher(g, x, y, n) {
+  g.fillStyle = 'rgba(56,189,248,0.25)';
+  g.beginPath(); g.arc(x, y, 13, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#38bdf8';
+  g.beginPath(); g.arc(x, y, 9, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#fff';
+  g.font = '800 9px system-ui,sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(n, x, y + 1);
+}
+
+(function steps() {
+  const w = 240, h = 200;
+
+  let g = setup(document.getElementById('stepAim'), w, h);
+  miniBoard(g, w, h);
+  miniRows(g, 24);
+  g.strokeStyle = 'rgba(255,255,255,0.6)';
+  g.lineWidth = 2; g.setLineDash([3, 9]);
+  g.beginPath(); g.moveTo(120, 162); g.lineTo(212, 96); g.lineTo(150, 52); g.stroke();
+  g.setLineDash([]);
+  g.fillStyle = '#fff';
+  g.beginPath(); g.arc(150, 52, 4, 0, Math.PI * 2); g.fill();
+  launcher(g, 120, 162, 24);
+
+  g = setup(document.getElementById('stepFire'), w, h);
+  miniBoard(g, w, h);
+  miniRows(g, 24);
+  const shots = [[132, 148], [148, 136], [166, 122], [186, 108], [204, 95], [190, 78], [168, 66]];
+  shots.forEach((p, i) => {
+    g.fillStyle = 'rgba(125,211,252,' + (0.25 + i * 0.1).toFixed(2) + ')';
+    g.beginPath(); g.arc(p[0], p[1], 5, 0, Math.PI * 2); g.fill();
+  });
+  launcher(g, 120, 162, 24);
+
+  g = setup(document.getElementById('stepDrop'), w, h);
+  miniBoard(g, w, h);
+  miniRows(g, 24 + MINI);
+  g.strokeStyle = 'rgba(56,189,248,0.55)';
+  g.lineWidth = 2;
+  g.setLineDash([5, 4]);
+  for (const x of [40, 200]) {
+    g.beginPath(); g.moveTo(x, 34); g.lineTo(x, 58); g.stroke();
+  }
+  g.setLineDash([]);
+  g.fillStyle = 'rgba(56,189,248,0.8)';
+  for (const x of [40, 200]) {
+    g.beginPath();
+    g.moveTo(x - 5, 58); g.lineTo(x + 5, 58); g.lineTo(x, 66); g.closePath(); g.fill();
+  }
+  launcher(g, 186, 162, 24);
+})();
+
+/* ---------------- behaviour demos ----------------
+   These mirror the rules in js/sim.js: ramps rotate the velocity a quarter turn,
+   orbs reflect off the curve, pierce balls pass through, bomb balls burst. */
+const DEMO_W = 240, DEMO_H = 168, SPD = 108;
+
+const DEMOS = [
+  {
+    name: 'Ramp', note: 'The sloped face turns a ball ninety degrees — a ball dropping straight down leaves sideways. Its flat sides just bounce.',
+    build() {
+      return {
+        tiles: [{ b: brick('rampA', 6), x: 100, y: 66 }],
+        ball: { x: 116, y: -14, vx: 0, vy: 1, pierce: false, bomb: false }
+      };
+    }
+  },
+  {
+    name: 'Orb bumper', note: 'The same straight drop as the ramp, off-centre onto the curve — the outgoing angle depends on where it is struck.',
+    build() {
+      return {
+        tiles: [{ b: brick('orb', 6), x: 100, y: 70 }],
+        ball: { x: 128, y: -14, vx: 0, vy: 1, pierce: false, bomb: false }
+      };
+    }
+  },
+  {
+    name: 'Pierce ball', note: 'A banked pierce charge: the ball drills on through, hurting each tile it crosses.',
+    build() {
+      return {
+        tiles: [0, 1, 2, 3].map(i => ({ b: brick('normal', 9 + i * 8), x: 46 + i * 38, y: 62 })),
+        ball: { x: 118, y: DEMO_H + 14, vx: 0, vy: -1, pierce: true, bomb: false }
+      };
+    }
+  },
+  {
+    name: 'Bomb ball', note: 'A banked bomb charge: every impact bursts, hitting the neighbours too.',
+    build() {
+      const tiles = [];
+      for (let r = 0; r < 2; r++) for (let i = 0; i < 4; i++) {
+        tiles.push({ b: brick('normal', 12 + r * 14), x: 46 + i * 38, y: 44 + r * 38 });
+      }
+      return { tiles, ball: { x: 118, y: DEMO_H + 14, vx: 0, vy: -1, pierce: false, bomb: true } };
+    }
+  }
+];
+
+const TS = 34;             // tile size in the demos
+const BR = 6;              // ball radius
+const demosEl = document.getElementById('demos');
+const running = [];
+
+for (const d of DEMOS) {
+  const card = document.createElement('div');
+  card.className = 'demo';
+  card.innerHTML = '<canvas></canvas><b></b><span></span>';
+  card.querySelector('b').textContent = d.name;
+  card.querySelector('span').textContent = d.note;
+  demosEl.appendChild(card);
+  const cv = card.querySelector('canvas');
+  cv.width = DEMO_W * DPR; cv.height = DEMO_H * DPR;
+  const g = cv.getContext('2d');
+  g.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const scene = d.build();
+  scene.ball.cd = 0;
+  running.push({ def: d, g, scene, t: 0, rings: [], hit: null });
+}
+
+function resetScene(s) {
+  s.scene = s.def.build();
+  s.scene.ball.cd = 0;
+  s.t = 0; s.rings.length = 0; s.hit = null;
+}
+
+function hitTile(s, t, ball) {
+  t.b.hp = Math.max(0, t.b.hp - 1);
+  t.b.flash = 1;
+  if (ball.bomb) {
+    s.rings.push({ x: ball.x, y: ball.y, r: TS * 0.5, max: TS * 2, life: 1 });
+    for (const o of s.scene.tiles) {
+      const dx = o.x + TS / 2 - ball.x, dy = o.y + TS / 2 - ball.y;
+      if (dx * dx + dy * dy <= (TS * 1.9) * (TS * 1.9)) { o.b.hp = Math.max(0, o.b.hp - 1); o.b.flash = 1; }
+    }
+  }
+}
+
+function stepDemo(s, dt) {
+  const b = s.scene.ball;
+  const steps = 6, sdt = dt / steps;
+  for (let i = 0; i < steps; i++) {
+    b.x += b.vx * SPD * sdt;
+    b.y += b.vy * SPD * sdt;
+    if (b.x < BR && b.vx < 0) b.vx = -b.vx;
+    if (b.x > DEMO_W - BR && b.vx > 0) b.vx = -b.vx;
+    if (b.y < BR && b.vy < 0) b.vy = -b.vy;
+    if (b.cd > 0) b.cd -= sdt;
+    for (const t of s.scene.tiles) {
+      if (t.b.hp <= 0) continue;
+      const l = t.x - BR, r = t.x + TS + BR, tp = t.y - BR, bt = t.y + TS + BR;
+      if (b.x < l || b.x > r || b.y < tp || b.y > bt) continue;
+      if (t.b.type === 'rampA' || t.b.type === 'rampB') {
+        if (b.cd > 0) continue;
+        const a = t.b.type === 'rampA', L = Math.hypot(TS, TS);
+        const faces = [
+          { nx: 0, ny: 1, d: b.y - (t.y + TS) },
+          a ? { nx: 1, ny: 0, d: b.x - (t.x + TS) } : { nx: -1, ny: 0, d: t.x - b.x },
+          a
+            ? { nx: -TS / L, ny: -TS / L, d: (TS * TS - (b.x - t.x) * TS - (b.y - t.y) * TS) / L }
+            : { nx: TS / L, ny: -TS / L, d: ((b.x - t.x) * TS - (b.y - t.y) * TS) / L }
+        ];
+        let best = null, air = false;
+        for (const f of faces) {
+          const depth = BR - f.d;
+          if (depth <= 0) { air = true; break; }
+          if (!best || depth < best.depth) best = { f, depth };
+        }
+        if (air) continue;
+        b.x += best.f.nx * best.depth;
+        b.y += best.f.ny * best.depth;
+        const dot = b.vx * best.f.nx + b.vy * best.f.ny;
+        if (dot < 0) { b.vx -= 2 * dot * best.f.nx; b.vy -= 2 * dot * best.f.ny; }
+        b.cd = 0.09; hitTile(s, t, b);
+        break;
+      }
+      if (t.b.type === 'orb') {
+        if (b.cd > 0) continue;
+        const cx = t.x + TS / 2, cy = t.y + TS / 2;
+        const rad = TS / 2 + BR + 0.5;
+        let nx = b.x - cx, ny = b.y - cy;
+        const dd = Math.hypot(nx, ny) || 1;
+        if (dd > rad) continue;
+        nx /= dd; ny /= dd;
+        const dot = b.vx * nx + b.vy * ny;
+        b.vx -= 2 * dot * nx; b.vy -= 2 * dot * ny;
+        b.x = cx + nx * rad; b.y = cy + ny * rad;
+        b.cd = 0.09; hitTile(s, t, b);
+        break;
+      }
+      if (b.pierce) {
+        if (!b.seen) b.seen = [];
+        if (b.seen.indexOf(t) < 0) { b.seen.push(t); hitTile(s, t, b); }
+        continue;
+      }
+      const pl = b.x - l, pr = r - b.x, pt = b.y - tp, pb = bt - b.y;
+      const m = Math.min(pl, pr, pt, pb);
+      if (m === pl) { b.x = l; b.vx = -Math.abs(b.vx); }
+      else if (m === pr) { b.x = r; b.vx = Math.abs(b.vx); }
+      else if (m === pt) { b.y = tp; b.vy = -Math.abs(b.vy); }
+      else { b.y = bt; b.vy = Math.abs(b.vy); }
+      hitTile(s, t, b);
+      break;
+    }
+  }
+  for (let i = s.rings.length - 1; i >= 0; i--) {
+    const r = s.rings[i];
+    r.r += (r.max - r.r) * Math.min(1, dt * 9);
+    r.life -= dt * 2;
+    if (r.life <= 0) s.rings.splice(i, 1);
+  }
+  for (const t of s.scene.tiles) if (t.b.flash > 0) t.b.flash = Math.max(0, t.b.flash - dt * 4);
+  s.t += dt;
+  const gone = b.y > DEMO_H + 40 || b.y < -40 || b.x < -40 || b.x > DEMO_W + 40;
+  if (gone || s.t > 6) resetScene(s);
+}
+
+function drawDemo(s) {
+  const g = s.g;
+  g.fillStyle = '#10121c';
+  g.fillRect(0, 0, DEMO_W, DEMO_H);
+  for (const t of s.scene.tiles) {
+    if (t.b.hp <= 0) continue;
+    g.save();
+    g.translate(t.x, t.y);
+    g.scale(TS / BSIZE, TS / BSIZE);
+    paintTile(g, t.b, 0, 0, BSIZE, BSIZE);
+    g.restore();
+  }
+  for (const r of s.rings) {
+    g.strokeStyle = 'rgba(251,146,60,' + Math.max(0, r.life * 0.75).toFixed(2) + ')';
+    g.lineWidth = 3;
+    g.beginPath(); g.arc(r.x, r.y, r.r, 0, Math.PI * 2); g.stroke();
+  }
+  const b = s.scene.ball;
+  g.fillStyle = b.pierce ? '#a78bfa' : b.bomb ? '#fb923c' : '#f8fafc';
+  g.beginPath(); g.arc(b.x, b.y, BR, 0, Math.PI * 2); g.fill();
+}
+
+let lastT = 0, visible = true;
+const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(0.05, (now - lastT) / 1000 || 0.016);
+  lastT = now;
+  if (!visible) return;
+  for (const s of running) {
+    if (!reduce) stepDemo(s, dt);
+    drawDemo(s);
+  }
+}
+document.addEventListener('visibilitychange', () => { visible = !document.hidden; });
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

@@ -1,14 +1,4 @@
 'use strict';
-function rr(x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
-}
-
 function aimDir() {
   const dx = aimPt.x - originX;
   let dy = aimPt.y - LAUNCH_Y;
@@ -56,116 +46,10 @@ function draw() {
   ctx.beginPath(); ctx.moveTo(0, DANGER_Y); ctx.lineTo(W, DANGER_Y); ctx.stroke();
   ctx.setLineDash([]);
 
-  for (const p of pickups) {
-    const pulse = 1 + Math.sin(timeSec * 5 + p.seed) * 0.12;
-    ctx.strokeStyle = 'rgba(52,211,153,' + (0.35 * pulse).toFixed(2) + ')';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.r * pulse + 4, 0, Math.PI * 2); ctx.stroke();
-    ctx.fillStyle = '#34d399';
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.r * pulse, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 3.5;
-    ctx.beginPath();
-    ctx.moveTo(p.x - 7, p.y); ctx.lineTo(p.x + 7, p.y);
-    ctx.moveTo(p.x, p.y - 7); ctx.lineTo(p.x, p.y + 7);
-    ctx.stroke();
-  }
+  for (const p of pickups) paintPickup(ctx, p.x, p.y, p.r, timeSec * 5 + p.seed);
 
   const off = mode === 'shifting' ? easeOut(Math.min(shiftT, 1)) * CELL : 0;
-  for (const b of bricks) {
-    const by = b.y + off;
-    const mx = b.x + b.w / 2, my = by + b.h / 2;
-    if (b.type === 'rampA' || b.type === 'rampB') {
-      ctx.beginPath();
-      if (b.type === 'rampA') {
-        ctx.moveTo(b.x, by + b.h); ctx.lineTo(b.x + b.w, by + b.h); ctx.lineTo(b.x + b.w, by);
-      } else {
-        ctx.moveTo(b.x, by + b.h); ctx.lineTo(b.x + b.w, by + b.h); ctx.lineTo(b.x, by);
-      }
-      ctx.closePath();
-      ctx.fillStyle = tileColor(b); ctx.fill();
-      ctx.strokeStyle = 'rgba(8,47,73,0.6)'; ctx.lineWidth = 2; ctx.stroke();
-      ctx.fillStyle = '#083344';
-      ctx.font = '800 12px system-ui,sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(b.hp, b.x + b.w * 0.66, by + b.h * 0.68);
-      if (b.flash > 0) { ctx.fillStyle = 'rgba(255,255,255,' + (b.flash * 0.7).toFixed(2) + ')'; ctx.fill(); }
-      continue;
-    }
-    if (b.type === 'orb') {
-      ctx.beginPath(); ctx.arc(mx, my, BSIZE / 2, 0, Math.PI * 2);
-      ctx.fillStyle = tileColor(b); ctx.fill();
-      ctx.strokeStyle = 'rgba(15,23,42,0.55)'; ctx.lineWidth = 2; ctx.stroke();
-      ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.arc(mx, my, BSIZE / 2 - 5, Math.PI * 0.95, Math.PI * 1.65); ctx.stroke();
-      ctx.fillStyle = '#fff';
-      ctx.font = '800 12px system-ui,sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(b.hp, mx, my + 1);
-      if (b.flash > 0) { ctx.fillStyle = 'rgba(255,255,255,' + (b.flash * 0.7).toFixed(2) + ')'; ctx.fill(); }
-      continue;
-    }
-    rr(b.x, by, b.w, b.h, 9);
-    ctx.fillStyle = tileColor(b); ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.28)'; ctx.lineWidth = 2; ctx.stroke();
-    rr(b.x + 3, by + 3, b.w - 6, b.h * 0.32, 6);
-    ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fill();
-    if (b.type === 'bomb') {
-      ctx.fillStyle = '#1e293b';
-      ctx.beginPath(); ctx.arc(mx - 1, my + 3, BSIZE * 0.27, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(mx - 1, my + 3, BSIZE * 0.27, Math.PI * 1.1, Math.PI * 1.5); ctx.stroke();
-      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.moveTo(mx + 4, my - 8); ctx.quadraticCurveTo(mx + 10, my - 14, mx + 14, my - 11); ctx.stroke();
-      ctx.fillStyle = '#fde047';
-      ctx.beginPath(); ctx.arc(mx + 15, my - 11, 2.6, 0, Math.PI * 2); ctx.fill();
-    } else if (b.type === 'gift') {
-      ctx.fillStyle = '#fff';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = '800 19px system-ui,sans-serif';
-      ctx.fillText('?', mx, my - 4);
-      ctx.font = '700 11px system-ui,sans-serif';
-      ctx.fillText(b.hp, mx, my + 11);
-    } else if (b.type === 'mult') {
-      ctx.fillStyle = '#fff';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = '900 14px system-ui,sans-serif';
-      ctx.fillText('×2', mx, my - 4);
-      ctx.font = '700 11px system-ui,sans-serif';
-      ctx.fillText(b.hp, mx, my + 10);
-    } else if (b.type === 'pierce') {
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.moveTo(mx - 9, my - 10); ctx.lineTo(mx - 2, my - 3); ctx.lineTo(mx - 9, my + 4); ctx.closePath(); ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(mx + 1, my - 10); ctx.lineTo(mx + 8, my - 3); ctx.lineTo(mx + 1, my + 4); ctx.closePath(); ctx.fill();
-      ctx.font = '700 11px system-ui,sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(b.hp, mx, my + 11);
-    } else if (b.type === 'blast') {
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      for (let i = 0; i < 8; i++) {
-        const a = (Math.PI / 4) * i - Math.PI / 2;
-        const rad = i % 2 === 0 ? 8 : 3.4;
-        const px = mx + Math.cos(a) * rad, py = my - 4 + Math.sin(a) * rad;
-        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-      }
-      ctx.closePath(); ctx.fill();
-      ctx.font = '700 11px system-ui,sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(b.hp, mx, my + 11);
-    } else {
-      ctx.fillStyle = '#fff';
-      ctx.font = '800 ' + (b.hp > 99 ? 12 : b.hp > 9 ? 15 : 17) + 'px system-ui,sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(b.hp, mx, my + 1);
-    }
-    if (b.flash > 0) {
-      rr(b.x, by, b.w, b.h, 9);
-      ctx.fillStyle = 'rgba(255,255,255,' + (b.flash * 0.8).toFixed(2) + ')'; ctx.fill();
-    }
-  }
+  for (const b of bricks) paintTile(ctx, b, b.x, b.y + off, b.w, b.h);
 
   for (let i = balls.length - 1; i >= 0; i--) {
     const b = balls[i];
@@ -191,7 +75,7 @@ function draw() {
   function tag(str, x, color) {
     ctx.font = '800 10px system-ui,sans-serif';
     const w = ctx.measureText(str).width + 14;
-    rr(x - w / 2, CHIP_Y, w, 17, 8);
+    rr(ctx, x - w / 2, CHIP_Y, w, 17, 8);
     ctx.fillStyle = 'rgba(13,16,26,0.85)'; ctx.fill();
     ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.stroke();
     ctx.fillStyle = color;

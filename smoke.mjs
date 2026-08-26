@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
-const FILES = ['config', 'state', 'audio', 'fx', 'board', 'actions', 'sim', 'render', 'progress', 'input', 'main'];
+const FILES = ['tiles', 'config', 'state', 'audio', 'fx', 'board', 'actions', 'sim', 'render', 'progress', 'input', 'main'];
 
 function makeCtx() {
   const base = { measureText: () => ({ width: 20 }) };
