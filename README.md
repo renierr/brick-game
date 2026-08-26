@@ -1,6 +1,6 @@
 # Ricochet
 
-A browser take on the classic brick-breaker *Bricks And Balls Crusher*: aim a volley of bouncing balls, crush numbered bricks, and ride endlessly through self-generating levels.
+A browser game: aim a volley of bouncing balls, crush numbered bricks, and ride endlessly through self-generating levels.
 
 ## Play
 
