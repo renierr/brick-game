@@ -50,6 +50,6 @@ function applyMuteIcon() {
 }
 $('muteBtn').addEventListener('click', () => {
   muted = !muted;
-  localStorage.setItem('bbc_mute', muted ? '1' : '0');
+  storageSet('bbc_mute', muted ? '1' : '0');
   applyMuteIcon();
 });

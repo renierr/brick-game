@@ -1,8 +1,17 @@
 'use strict';
+function storageGet(key) {
+  try { return localStorage.getItem(key); } catch (e) { return null; }
+}
+function storageSet(key, value) {
+  try { localStorage.setItem(key, value); } catch (e) {}
+}
+function storageRemove(key) {
+  try { localStorage.removeItem(key); } catch (e) {}
+}
 let bricks = [], pickups = [], balls = [], particles = [], texts = [], rings = [];
 let level = 1, score = 0, totalBalls = 1, originX = W / 2;
-let best = +(localStorage.getItem('bbc_best') || 0);
-let muted = localStorage.getItem('bbc_mute') === '1';
+let best = +(storageGet('bbc_best') || 0);
+let muted = storageGet('bbc_mute') === '1';
 let mode = 'aiming', uidSeq = 1, timeSec = 0;
 let pendingShots = 0, volleyDir = { x: 0, y: -1 }, volleyAcc = 0, volleyElapsed = 0, firstLandX = null;
 let pierceCharges = 0, bombCharges = 0, pierceLeft = 0, bombLeft = 0;

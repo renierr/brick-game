@@ -6,13 +6,13 @@ A browser game: aim a volley of bouncing balls, crush numbered bricks, and ride 
 
 [renierr.github.io/brick-game/](https://renierr.github.io/brick-game/)
 
-Open `index.html` in any modern browser, or serve the folder:
+Open `index.html` in any modern browser, including directly from a downloaded folder with no web server or network connection. Or serve the folder:
 
 ```sh
 npx serve .
 ```
 
-No build step, no dependencies.
+No build step, no dependencies, and no external assets or server API. On GitHub Pages, the service worker caches the game after its first successful visit, so it can start without a connection afterward. When GitHub Pages is reachable, it checks for and switches to a newly published version on launch, when returning to the tab, and when connectivity returns. Service-worker checks and same-origin asset refreshes bypass the browser HTTP cache, so a GitHub Pages deployment is used as soon as its updated files are available. Its relative paths work at either a repository subpath or a custom domain. Progress is saved locally when the browser permits storage; if local storage is unavailable, the game remains fully playable for the current session.
 
 ## Gameplay
 

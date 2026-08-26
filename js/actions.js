@@ -28,7 +28,7 @@ function destroy(k) {
   let pts = k.maxHp * 10 + level * 2;
   if (k.type === 'mult') pts *= 2;
   score += pts;
-  if (score > best) { best = score; localStorage.setItem('bbc_best', best); }
+  if (score > best) { best = score; storageSet('bbc_best', best); }
   if (k.type === 'mult') addText(k.x + k.w / 2, k.y + k.h / 2, '+' + pts + ' x2!', '#fbbf24', 1, 17);
   else addText(k.x + k.w / 2, k.y + k.h / 2, '+' + pts, colorByHp(k.maxHp), 0.8, 14);
   burst(k.x + k.w / 2, k.y + k.h / 2, colorByHp(k.maxHp), 14);
@@ -103,7 +103,7 @@ function finalizeShift() {
   if (!bricks.length && !pickups.length) {
     const bonus = 100 * level;
     score += bonus;
-    if (score > best) { best = score; localStorage.setItem('bbc_best', best); }
+    if (score > best) { best = score; storageSet('bbc_best', best); }
     addText(W / 2, H / 2, '+' + bonus, '#fbbf24', 1.4, 24);
     banner('LEVEL ' + (level + 1));
     totalBalls = Math.min(totalBalls + 2, VOLLEY_CAP);
@@ -118,14 +118,14 @@ function finalizeShift() {
 
 function gameOver() {
   mode = 'over';
-  if (score > best) { best = score; localStorage.setItem('bbc_best', best); }
+  if (score > best) { best = score; storageSet('bbc_best', best); }
   updateHud();
   finalScoreEl.textContent = score;
   finalBestEl.textContent = 'Best: ' + best;
   overlayEl.classList.remove('hidden');
   sfx.over();
   if (checkpoint) writeSave(checkpoint, 'bbc_save');
-  else localStorage.removeItem('bbc_save');
+  else storageRemove('bbc_save');
   saveDirty = false;
 }
 
@@ -137,7 +137,7 @@ function resetGame() {
   speedMult = 1; autoSped = false;
   pendingShots = 0; firstLandX = null; aiming = false; aimPt = null;
   overlayEl.classList.add('hidden');
-  localStorage.removeItem('bbc_save');
+  storageRemove('bbc_save');
   saveDirty = false;
   generateLevel(1);
   banner('LEVEL 1');

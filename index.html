@@ -125,5 +125,26 @@
 <script src="js/progress.js"></script>
 <script src="js/input.js"></script>
 <script src="js/main.js"></script>
+<script>
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  let hadController = !!navigator.serviceWorker.controller;
+  let refreshing = false;
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(registration => {
+    const checkForUpdate = () => registration.update().catch(() => {});
+    checkForUpdate();
+    window.addEventListener('online', checkForUpdate);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) checkForUpdate();
+    });
+  }).catch(() => {});
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (hadController && !refreshing) {
+      refreshing = true;
+      location.reload();
+    }
+    hadController = true;
+  });
+}
+</script>
 </body>
 </html>

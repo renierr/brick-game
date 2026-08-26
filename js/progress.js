@@ -10,11 +10,11 @@ function saveNow() {
 }
 
 function writeSave(data, key) {
-  try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {}
+  storageSet(key, JSON.stringify(data));
 }
 
 function readKey(key) {
-  try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
+  try { return JSON.parse(storageGet(key) || 'null'); } catch (e) { return null; }
 }
 
 function hydrate(d) {
