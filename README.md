@@ -22,12 +22,27 @@ No build step, no dependencies.
 - After every volley the board **drops one row**. If any brick crosses the red danger line, the run ends.
 - Clear the entire board to complete the level: score bonus, +2 balls, and a freshly generated next level.
 - Green **(+)** pickups are collected on touch and permanently add a ball.
-- **Special tiles**:
-  - **Bombs** explode on any hit, destroying all neighboring bricks — chain them for cascades.
-  - **Gift (?)** tiles trigger a **random power-up** when destroyed — +10 balls, Pierce Volley, Bomb Volley, or Clear Row.
-  - **×2 multiplier** tiles pay double points when destroyed.
-  - **Pierce (») tiles** grant a piercing charge — charges stack, one drilling ball per charge in your next volley.
-  - **Blast tiles** grant a bomb charge — charges stack, one explosive ball per charge in your next volley.
+- Banked **pierce / bomb charges** show as chips in a **fixed spot** just above the launcher — they stay put wherever the launcher slides to.
+
+### Tile reference
+
+Except the (+) pickup, every tile carries HP and breaks like a normal brick; the effect is what happens *in addition*.
+
+| Tile | Looks like | Effect |
+| --- | --- | --- |
+| **Brick** | numbered rounded block | Plain target. HP shown; each hit removes 1. Points = `maxHP × 10 + level × 2`. |
+| **Bomb** | dark fuse sphere | **Dies to a single hit regardless of HP** and explodes: everything within ~2 cells takes lethal damage. Chains through other bombs. |
+| **Gift (?)** | white `?` | On destruction fires one **random power-up**: +10 balls, Pierce charge, Bomb charge, or Clear Row (25% each). |
+| **×2 multiplier** | white `×2` | Pays **double points** when destroyed, with its own `+N x2!` popup. |
+| **Pierce (»)** | double chevron | Banks a **pierce charge**. One ball of your next volley drills straight through bricks instead of bouncing, damaging each brick it passes once. |
+| **Blast** | white starburst | Banks a **bomb charge**. One ball of your next volley explodes on every impact for up to **50 damage** in a radius. |
+| **Ramp** | filled triangle | Not a bouncer — a **90° deflector**. Rotates the ball's velocity a quarter turn (`/` and `\` turn opposite ways) and takes 1 damage. Redirects a vertical volley sideways across the board. |
+| **Orb** | circle with highlight | A **round bumper**: reflects off its curved surface instead of a flat face, so outgoing angles fan out. Takes 1 damage per bounce. |
+| **(+) pickup** | green pulsing plus | Not a brick — no HP, cannot be shot away. Collected on touch, permanently **+1 ball** to your stash. |
+
+Ramps and orbs have a short per-ball cooldown (~0.09 s), so a ball cannot get stuck ping-ponging inside a cluster of them.
+
+**Charges stack**: bank several pierce/blast tiles (or tap the menu repeatedly) and several balls of your next volley inherit the effect — consumed one per ball as the volley fires. A ball can be both pierce *and* bomb.
 
 ### Level Design
 
@@ -39,13 +54,35 @@ The board is a seamless **13-column grid** — tiles sit flush against each othe
 - Tall compositions may begin with up to **4 rows hidden above the top edge**; those slide into view one row per turn. At least one row is always visible — a board is never fully off-screen.
 - From **level 8**, two stencils usually stack vertically into one bigger composition when space allows.
 - Brick HP scales forever with the level, and ~12% of tiles get a ×1.5 reinforcement.
-- Plain slots roll bonuses: bombs ≈2–4% (grows slowly), gifts 3%, ×2 multipliers 4%. On top of that, 1–3 plain tiles are swapped for green (+) pickups.
+- Finally, 1–3 plain tiles are swapped for green (+) pickups.
 
-**Tile legend**
+**Which tile spawns when**
 
-    #   numbered brick        B   bomb             G   gift (?)
-    M   ×2 multiplier         P   pierce tile      X   blast tile
-    /   ramp deflector (\)    O   orb bumper       .   empty space
+Special tiles arrive from three independent sources, so no kind is hostage to which stencil got drawn:
+
+1. **Stencil art** — hand-placed accents baked into a layout (the invader's orb eyes, the castle's pierce towers). Drawn only when that stencil comes up.
+2. **Per-tile roll** — every plain `#` slot independently rolls for a common bonus.
+3. **Rare seeding** — after the art is laid out, each exotic kind gets one chance to convert a handful of plain tiles. This is what keeps ramps and orbs in circulation; without it they lived in a single stencil each. Skipped when the drawn art already supplies enough of that kind.
+
+| Tile | Source | Unlocks at | Rate |
+| --- | --- | --- | --- |
+| **Bomb** | per-tile roll | level 1 | 2% per plain tile, creeping to a 4% ceiling with level |
+| **Gift (?)** | per-tile roll | level 1 | 3% per plain tile |
+| **×2 multiplier** | per-tile roll + art | level 1 | 4% per plain tile |
+| **Blast** | seeding + art | **level 3** | 55% of boards get 1–2 (cap 2) |
+| **Pierce (»)** | seeding + art | **level 5** | 50% of boards get 1–2 (cap 2) |
+| **Orb** | seeding + art | **level 7** | 50% of boards get 1–3 (cap 3) |
+| **Ramp** | seeding + art | **level 10** | 45% of boards get 2–4, each `/` or `\` at random (cap 4) |
+| **(+) pickup** | fixed | level 1 | always 1–3 per board |
+
+Before a kind's unlock level it can still appear, but only if its stencil is drawn — so early levels stay simple and the exotic mechanics ease in as you climb. Measured over the generator, a level-30 board (~54 tiles) carries roughly 2 bombs, 2 gifts, 2 multipliers, 1 blast, 1 pierce, 1–2 orbs and 2 ramps.
+
+**Tile legend** — the characters a stencil may use (`B` for a bomb exists but is left to the
+per-tile roll rather than hand-placed):
+
+    #   numbered brick        G   gift (?)         M   ×2 multiplier
+    P   pierce tile           X   blast tile       O   orb bumper
+    /   ramp deflector        \   ramp deflector   .   empty space
 
 **Stencil gallery**
 
@@ -247,7 +284,7 @@ Open the grid menu for unlimited-use power-ups:
 | Bomb Volley | Adds one bomb charge — its ball blasts neighbors for max 50 damage |
 | Clear Row | Wipes the lowest brick row |
 
-**Charges stack**: catch several pierce/blast tiles (or tap the menu repeatedly) and several balls of your next volley inherit the effect — consumed one per ball as the volley fires.
+These bank the same charges the pierce and blast tiles do — see [Tile reference](#tile-reference). Whatever is banked shows as a chip above the launcher until the volley spends it.
 
 ### Action buttons
 

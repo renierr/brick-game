@@ -82,6 +82,21 @@ assert(seenBlast, 'blast tiles spawn across generated levels');
 assert(seenRamp, 'ramp tiles spawn across generated levels');
 assert(seenOrb, 'orb tiles spawn across generated levels');
 
+function boardRate(lvl, pred, n = 400) {
+  let hits = 0;
+  for (let i = 0; i < n; i++) {
+    run(`generateLevel(${lvl})`);
+    if (run(`bricks.some(b => ${pred})`)) hits++;
+  }
+  return hits / n;
+}
+const RAMP = "b.type === 'rampA' || b.type === 'rampB'";
+assert(boardRate(30, RAMP) > 0.3, 'ramps reach a third of late boards, not just the one ramp stencil');
+assert(boardRate(30, "b.type === 'orb'") > 0.4, 'orb bumpers reach most late boards');
+assert(boardRate(30, "b.type === 'pierce'") > 0.3, 'pierce tiles reach a third of late boards');
+assert(boardRate(2, RAMP) < 0.15, 'ramps stay stencil-only before their unlock level');
+assert(boardRate(4, "b.type === 'pierce'") < 0.25, 'pierce seeding waits for its unlock level');
+
 run('generateLevel(5)');
 run("bricks.filter(b => b.type === 'normal').slice(0, 40).forEach(b => destroy(b))");
 const giftBrick = run("bricks.find(b => b.type === 'gift')");
@@ -124,6 +139,7 @@ for (let i = 0; i < 80 && run('balls.length'); i++) run("moveBalls(0.03)");
 const hpAfter = run('bricks[0].hp');
 assert(run('bricks.length') === 1 && hpBefore - hpAfter <= 50 && hpBefore - hpAfter >= 40, 'bomb ball blast deals capped damage (max 50)');
 
+run('pierceCharges = 0; bombCharges = 0');
 run("bricks.push(mkBrick(100, 100, 3, 'pierce'), mkBrick(160, 100, 3, 'blast'))");
 run("destroy(bricks.find(b => b.type === 'pierce')); destroy(bricks.find(b => b.type === 'blast'))");
 assert(run('pierceCharges') === 1 && run('bombCharges') === 1, 'tiles bank one charge each');
@@ -136,6 +152,17 @@ assert(pat === '311000', 'charges distribute per ball (P+B, P, P, then normal)')
 storage.set('bbc_save', JSON.stringify({ v: 1, level: 3, score: 10, best: 20, totalBalls: 4, originX: 240, bricks: [{ x: 100, y: 100, hp: 5, mh: 5, t: 'pierce' }, { x: 160, y: 100, hp: 5, mh: 5, t: 'orb' }], pk: [] }));
 run('loadSaved()');
 assert(run("bricks.some(b => b.type === 'pierce')") && run("bricks.some(b => b.type === 'orb')"), 'tile types survive save/load');
+
+run('originX = 8; pierceCharges = 2; bombCharges = 1');
+const chipX = [];
+ctx.measureText = () => ({ width: 40 });
+const realFill = ctx.fillText;
+ctx.fillText = (s, x) => { if (typeof s === 'string' && /PIERCE|BOMB/.test(s)) chipX.push(x); };
+run('draw()');
+ctx.fillText = realFill;
+assert(chipX.length === 2 && chipX.every(x => x > 54 && x < run('W') - 54),
+  'charge chips sit at a fixed spot on screen, not glued to the launcher');
+run('pierceCharges = 0; bombCharges = 0; originX = 240');
 
 assert(run('STENCILS.length') >= 19, 'stencil gallery holds 19+ forms');
 const stencilOk = run('STENCILS.every(s => s.length >= 5 && s.every(r => r.length === s[0].length) && s[0].length <= COLS)');

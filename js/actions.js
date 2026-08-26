@@ -38,11 +38,11 @@ function destroy(k) {
     usePower(kinds[randInt(0, kinds.length - 1)]);
   } else if (k.type === 'pierce') {
     pierceCharges++;
-    addText(originX, LAUNCH_Y - 64, 'PIERCE ARMED', '#a78bfa', 1.2, 15);
+    addText(W / 2, TOAST_Y, 'PIERCE ARMED', '#a78bfa', 1.2, 15);
     sfx.arm();
   } else if (k.type === 'blast') {
     bombCharges++;
-    addText(originX, LAUNCH_Y - 64, 'BOMB ARMED', '#fb923c', 1.2, 15);
+    addText(W / 2, TOAST_Y, 'BOMB ARMED', '#fb923c', 1.2, 15);
     sfx.arm();
   } else { sfx.break_(); shake = Math.min(shake + 2, 6); }
   updateHud();
@@ -62,15 +62,15 @@ function usePower(kind) {
   ensureAudio();
   if (kind === 'balls') {
     totalBalls = Math.min(MAX_BALLS, totalBalls + 10);
-    addText(originX, LAUNCH_Y - 46, '+10 BALLS', '#38bdf8', 1, 16);
+    addText(W / 2, TOAST_Y, '+10 BALLS', '#38bdf8', 1, 16);
     sfx.plus();
   } else if (kind === 'pierce') {
     pierceCharges++;
-    addText(originX, LAUNCH_Y - 46, 'PIERCE ARMED', '#a78bfa', 1, 16);
+    addText(W / 2, TOAST_Y, 'PIERCE ARMED', '#a78bfa', 1, 16);
     sfx.arm();
   } else if (kind === 'bomb') {
     bombCharges++;
-    addText(originX, LAUNCH_Y - 46, 'BOMBS ARMED', '#fb923c', 1, 16);
+    addText(W / 2, TOAST_Y, 'BOMBS ARMED', '#fb923c', 1, 16);
     sfx.arm();
   } else if (kind === 'row') {
     clearRow();
@@ -158,5 +158,5 @@ function recallBalls() {
   balls.length = 0;
   pendingShots = 0;
   firstLandX = null;
-  addText(W / 2, LAUNCH_Y - 64, 'RECALLED', '#7dd3fc', 1, 16);
+  addText(W / 2, TOAST_Y, 'RECALLED', '#7dd3fc', 1, 16);
 }

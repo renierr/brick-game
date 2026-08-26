@@ -191,19 +191,19 @@ function draw() {
   function tag(str, x, color) {
     ctx.font = '800 10px system-ui,sans-serif';
     const w = ctx.measureText(str).width + 14;
-    rr(x - w / 2, LAUNCH_Y - 40, w, 17, 8);
+    rr(x - w / 2, CHIP_Y, w, 17, 8);
     ctx.fillStyle = 'rgba(13,16,26,0.85)'; ctx.fill();
     ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.stroke();
     ctx.fillStyle = color;
-    ctx.fillText(str, x, LAUNCH_Y - 31);
+    ctx.fillText(str, x, CHIP_Y + 9);
   }
   if (pierceCharges + pierceLeft > 0) {
     const n = pierceCharges + pierceLeft;
-    tag(n > 1 ? 'PIERCE ×' + n : 'PIERCE', originX - 62, '#a78bfa');
+    tag(n > 1 ? 'PIERCE ×' + n : 'PIERCE', W / 2 - CHIP_DX, '#a78bfa');
   }
   if (bombCharges + bombLeft > 0) {
     const n = bombCharges + bombLeft;
-    tag(n > 1 ? 'BOMB ×' + n : 'BOMB', originX + 62, '#fb923c');
+    tag(n > 1 ? 'BOMB ×' + n : 'BOMB', W / 2 + CHIP_DX, '#fb923c');
   }
 
   if (aiming && aimPt && mode === 'aiming') {
