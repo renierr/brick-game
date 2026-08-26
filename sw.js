@@ -2,6 +2,7 @@ const CACHE = 'ricochet-v1';
 const ASSETS = [
   './',
   'index.html',
+  'favicon.svg',
   'manifest.webmanifest',
   'icons/ricochet.svg',
   'help.html',
