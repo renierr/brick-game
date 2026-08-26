@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "Ricochet",
+  "short_name": "Ricochet",
+  "description": "Aim a volley of bouncing balls and clear the board.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0d14",
+  "theme_color": "#0b0d14",
+  "icons": [
+    {
+      "src": "icons/ricochet.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
