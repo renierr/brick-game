@@ -1,5 +1,6 @@
 'use strict';
 let last = performance.now(), bgTimer = null;
+let wakeLock = null, wakeWanted = false, wakePending = false;
 
 const stageEl = $('stage');
 function fitStage() {
@@ -23,6 +24,32 @@ function turnActive() {
   return mode === 'shooting' || mode === 'shifting' || mode === 'between';
 }
 
+// Keep the display awake while a turn plays itself out — a volley can run for
+// tens of seconds without any touch input, which is long enough for a phone to
+// dim and lock. The lock is dropped as soon as we are back to aiming.
+function acquireWake() {
+  if (wakeLock || wakePending || !('wakeLock' in navigator) || document.hidden) return;
+  wakePending = true;
+  navigator.wakeLock.request('screen').then(l => {
+    wakePending = false;
+    if (!wakeWanted) { l.release().catch(() => {}); return; }
+    wakeLock = l;
+    l.addEventListener('release', () => { if (wakeLock === l) wakeLock = null; });
+  }).catch(() => { wakePending = false; });
+}
+
+function releaseWake() {
+  const l = wakeLock;
+  wakeLock = null;
+  if (l) l.release().catch(() => {});
+}
+
+function syncWake() {
+  const want = turnActive() && mode !== 'over';
+  wakeWanted = want;
+  if (want) acquireWake(); else releaseWake();
+}
+
 function pump(dt) {
   const n = Math.max(1, Math.ceil(dt / 0.02));
   const s = dt / n;
@@ -34,6 +61,7 @@ function frame(now) {
   if (bgTimer !== null) { last = now; return; }
   pump(clamp((now - last) / 1000, 0, 0.25));
   last = now;
+  syncWake();
   syncActions();
   draw();
 }
@@ -69,6 +97,8 @@ document.addEventListener('visibilitychange', () => {
     if (turnActive()) startBg();
   } else {
     stopBg();
+    // The browser revokes the lock whenever the page is hidden; take it back.
+    if (wakeWanted) acquireWake();
   }
 });
 requestAnimationFrame(frame);

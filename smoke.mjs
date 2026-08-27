@@ -45,6 +45,7 @@ const sandbox = {
     hidden: false
   },
   window: { devicePixelRatio: 1, addEventListener() {} },
+  navigator: {},
   localStorage: {
     getItem: k => (storage.has(k) ? storage.get(k) : null),
     setItem: (k, v) => storage.set(k, String(v)),
